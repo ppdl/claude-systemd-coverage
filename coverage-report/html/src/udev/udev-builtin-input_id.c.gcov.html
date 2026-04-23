@@ -1,0 +1,446 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - combined.info - src/udev/udev-builtin-input_id.c</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">src/udev</a> - udev-builtin-input_id.c<span style="font-size: 80%;"> (source / <a href="udev-builtin-input_id.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">combined.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">189</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-04-24 09:00:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* SPDX-License-Identifier: GPL-2.0+ */</a>
+<a name="2"><span class="lineNum">       2 </span>            : /*</a>
+<a name="3"><span class="lineNum">       3 </span>            :  * expose input properties via udev</a>
+<a name="4"><span class="lineNum">       4 </span>            :  *</a>
+<a name="5"><span class="lineNum">       5 </span>            :  * Portions Copyright © 2004 David Zeuthen, &lt;david@fubar.dk&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            :  * Copyright © 2014 Carlos Garnacho &lt;carlosg@gnome.org&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            :  */</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;errno.h&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;fcntl.h&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &lt;stdarg.h&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &lt;stdlib.h&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &lt;unistd.h&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &lt;linux/limits.h&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : </a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;device-util.h&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;fd-util.h&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;missing_input.h&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;stdio-util.h&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;string-util.h&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;udev-builtin.h&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : #include &quot;util.h&quot;</a>
+<a name="23"><span class="lineNum">      23 </span>            : </a>
+<a name="24"><span class="lineNum">      24 </span>            : /* we must use this kernel-compatible implementation */</a>
+<a name="25"><span class="lineNum">      25 </span>            : #define BITS_PER_LONG (sizeof(unsigned long) * 8)</a>
+<a name="26"><span class="lineNum">      26 </span>            : #define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)</a>
+<a name="27"><span class="lineNum">      27 </span>            : #define OFF(x)  ((x)%BITS_PER_LONG)</a>
+<a name="28"><span class="lineNum">      28 </span>            : #define BIT(x)  (1UL&lt;&lt;OFF(x))</a>
+<a name="29"><span class="lineNum">      29 </span>            : #define LONG(x) ((x)/BITS_PER_LONG)</a>
+<a name="30"><span class="lineNum">      30 </span>            : #define test_bit(bit, array)    ((array[LONG(bit)] &gt;&gt; OFF(bit)) &amp; 1)</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : struct range {</a>
+<a name="33"><span class="lineNum">      33 </span>            :         unsigned start;</a>
+<a name="34"><span class="lineNum">      34 </span>            :         unsigned end;</a>
+<a name="35"><span class="lineNum">      35 </span>            : };</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : /* key code ranges above BTN_MISC (start is inclusive, stop is exclusive)*/</a>
+<a name="38"><span class="lineNum">      38 </span>            : static const struct range high_key_blocks[] = {</a>
+<a name="39"><span class="lineNum">      39 </span>            :         { KEY_OK, BTN_DPAD_UP },</a>
+<a name="40"><span class="lineNum">      40 </span>            :         { KEY_ALS_TOGGLE, BTN_TRIGGER_HAPPY }</a>
+<a name="41"><span class="lineNum">      41 </span>            : };</a>
+<a name="42"><span class="lineNum">      42 </span>            : </a>
+<a name="43"><span class="lineNum">      43 </span><span class="lineNoCov">          0 : static int abs_size_mm(const struct input_absinfo *absinfo) {</span></a>
+<a name="44"><span class="lineNum">      44 </span>            :         /* Resolution is defined to be in units/mm for ABS_X/Y */</a>
+<a name="45"><span class="lineNum">      45 </span><span class="lineNoCov">          0 :         return (absinfo-&gt;maximum - absinfo-&gt;minimum) / absinfo-&gt;resolution;</span></a>
+<a name="46"><span class="lineNum">      46 </span>            : }</a>
+<a name="47"><span class="lineNum">      47 </span>            : </a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineNoCov">          0 : static void extract_info(sd_device *dev, const char *devpath, bool test) {</span></a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineNoCov">          0 :         char width[DECIMAL_STR_MAX(int)], height[DECIMAL_STR_MAX(int)];</span></a>
+<a name="50"><span class="lineNum">      50 </span><span class="lineNoCov">          0 :         struct input_absinfo xabsinfo = {}, yabsinfo = {};</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineNoCov">          0 :         _cleanup_close_ int fd = -1;</span></a>
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<a name="53"><span class="lineNum">      53 </span><span class="lineNoCov">          0 :         fd = open(devpath, O_RDONLY|O_CLOEXEC);</span></a>
+<a name="54"><span class="lineNum">      54 </span><span class="lineNoCov">          0 :         if (fd &lt; 0)</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineNoCov">          0 :                 return;</span></a>
+<a name="56"><span class="lineNum">      56 </span>            : </a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineNoCov">          0 :         if (ioctl(fd, EVIOCGABS(ABS_X), &amp;xabsinfo) &lt; 0 ||</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineNoCov">          0 :             ioctl(fd, EVIOCGABS(ABS_Y), &amp;yabsinfo) &lt; 0)</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineNoCov">          0 :                 return;</span></a>
+<a name="60"><span class="lineNum">      60 </span>            : </a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineNoCov">          0 :         if (xabsinfo.resolution &lt;= 0 || yabsinfo.resolution &lt;= 0)</span></a>
+<a name="62"><span class="lineNum">      62 </span>            :                 return;</a>
+<a name="63"><span class="lineNum">      63 </span>            : </a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineNoCov">          0 :         xsprintf(width, &quot;%d&quot;, abs_size_mm(&amp;xabsinfo));</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineNoCov">          0 :         xsprintf(height, &quot;%d&quot;, abs_size_mm(&amp;yabsinfo));</span></a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :         udev_builtin_add_property(dev, test, &quot;ID_INPUT_WIDTH_MM&quot;, width);</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineNoCov">          0 :         udev_builtin_add_property(dev, test, &quot;ID_INPUT_HEIGHT_MM&quot;, height);</span></a>
+<a name="69"><span class="lineNum">      69 </span>            : }</a>
+<a name="70"><span class="lineNum">      70 </span>            : </a>
+<a name="71"><span class="lineNum">      71 </span>            : /*</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * Read a capability attribute and return bitmask.</a>
+<a name="73"><span class="lineNum">      73 </span>            :  * @param dev sd_device</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * @param attr sysfs attribute name (e. g. &quot;capabilities/key&quot;)</a>
+<a name="75"><span class="lineNum">      75 </span>            :  * @param bitmask: Output array which has a sizeof of bitmask_size</a>
+<a name="76"><span class="lineNum">      76 </span>            :  */</a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 : static void get_cap_mask(sd_device *pdev, const char* attr,</span></a>
+<a name="78"><span class="lineNum">      78 </span>            :                          unsigned long *bitmask, size_t bitmask_size,</a>
+<a name="79"><span class="lineNum">      79 </span>            :                          bool test) {</a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineNoCov">          0 :         const char *v;</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :         char text[4096];</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :         unsigned i;</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineNoCov">          0 :         char* word;</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineNoCov">          0 :         unsigned long val;</span></a>
+<a name="85"><span class="lineNum">      85 </span>            : </a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineNoCov">          0 :         if (sd_device_get_sysattr_value(pdev, attr, &amp;v) &lt; 0)</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 v = &quot;&quot;;</span></a>
+<a name="88"><span class="lineNum">      88 </span>            : </a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineNoCov">          0 :         xsprintf(text, &quot;%s&quot;, v);</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineNoCov">          0 :         log_device_debug(pdev, &quot;%s raw kernel attribute: %s&quot;, attr, text);</span></a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineNoCov">          0 :         memzero(bitmask, bitmask_size);</span></a>
+<a name="93"><span class="lineNum">      93 </span>            :         i = 0;</a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineNoCov">          0 :         while ((word = strrchr(text, ' ')) != NULL) {</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineNoCov">          0 :                 val = strtoul(word+1, NULL, 16);</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineNoCov">          0 :                 if (i &lt; bitmask_size / sizeof(unsigned long))</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineNoCov">          0 :                         bitmask[i] = val;</span></a>
+<a name="98"><span class="lineNum">      98 </span>            :                 else</a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineNoCov">          0 :                         log_device_debug(pdev, &quot;Ignoring %s block %lX which is larger than maximum size&quot;, attr, val);</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :                 *word = '\0';</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :                 ++i;</span></a>
+<a name="102"><span class="lineNum">     102 </span>            :         }</a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineNoCov">          0 :         val = strtoul (text, NULL, 16);</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineNoCov">          0 :         if (i &lt; bitmask_size / sizeof(unsigned long))</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineNoCov">          0 :                 bitmask[i] = val;</span></a>
+<a name="106"><span class="lineNum">     106 </span>            :         else</a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineNoCov">          0 :                 log_device_debug(pdev, &quot;Ignoring %s block %lX which is larger than maximum size&quot;, attr, val);</span></a>
+<a name="108"><span class="lineNum">     108 </span>            : </a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineNoCov">          0 :         if (test) {</span></a>
+<a name="110"><span class="lineNum">     110 </span>            :                 /* printf pattern with the right unsigned long number of hex chars */</a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :                 xsprintf(text, &quot;  bit %%4u: %%0%zulX\n&quot;,</span></a>
+<a name="112"><span class="lineNum">     112 </span>            :                          2 * sizeof(unsigned long));</a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineNoCov">          0 :                 log_device_debug(pdev, &quot;%s decoded bit map:&quot;, attr);</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 :                 val = bitmask_size / sizeof (unsigned long);</span></a>
+<a name="115"><span class="lineNum">     115 </span>            :                 /* skip over leading zeros */</a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineNoCov">          0 :                 while (val &gt; 0 &amp;&amp; bitmask[val-1] == 0)</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 :                         --val;</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 :                 for (i = 0; i &lt; val; ++i) {</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineNoCov">          0 :                         DISABLE_WARNING_FORMAT_NONLITERAL;</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :                         log_device_debug(pdev, text, i * BITS_PER_LONG, bitmask[i]);</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineNoCov">          0 :                         REENABLE_WARNING;</span></a>
+<a name="122"><span class="lineNum">     122 </span>            :                 }</a>
+<a name="123"><span class="lineNum">     123 </span>            :         }</a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="125"><span class="lineNum">     125 </span>            : </a>
+<a name="126"><span class="lineNum">     126 </span>            : /* pointer devices */</a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineNoCov">          0 : static bool test_pointers(sd_device *dev,</span></a>
+<a name="128"><span class="lineNum">     128 </span>            :                           const unsigned long* bitmask_ev,</a>
+<a name="129"><span class="lineNum">     129 </span>            :                           const unsigned long* bitmask_abs,</a>
+<a name="130"><span class="lineNum">     130 </span>            :                           const unsigned long* bitmask_key,</a>
+<a name="131"><span class="lineNum">     131 </span>            :                           const unsigned long* bitmask_rel,</a>
+<a name="132"><span class="lineNum">     132 </span>            :                           const unsigned long* bitmask_props,</a>
+<a name="133"><span class="lineNum">     133 </span>            :                           bool test) {</a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :         int button, axis;</span></a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineNoCov">          0 :         bool has_abs_coordinates = false;</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineNoCov">          0 :         bool has_rel_coordinates = false;</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineNoCov">          0 :         bool has_mt_coordinates = false;</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineNoCov">          0 :         bool has_joystick_axes_or_buttons = false;</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineNoCov">          0 :         bool is_direct = false;</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineNoCov">          0 :         bool has_touch = false;</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineNoCov">          0 :         bool has_3d_coordinates = false;</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 :         bool has_keys = false;</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :         bool stylus_or_pen = false;</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :         bool finger_but_no_pen = false;</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :         bool has_mouse_button = false;</span></a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineNoCov">          0 :         bool is_mouse = false;</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineNoCov">          0 :         bool is_touchpad = false;</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :         bool is_touchscreen = false;</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :         bool is_tablet = false;</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineNoCov">          0 :         bool is_joystick = false;</span></a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineNoCov">          0 :         bool is_accelerometer = false;</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :         bool is_pointing_stick= false;</span></a>
+<a name="153"><span class="lineNum">     153 </span>            : </a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineNoCov">          0 :         has_keys = test_bit(EV_KEY, bitmask_ev);</span></a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineNoCov">          0 :         has_abs_coordinates = test_bit(ABS_X, bitmask_abs) &amp;&amp; test_bit(ABS_Y, bitmask_abs);</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineNoCov">          0 :         has_3d_coordinates = has_abs_coordinates &amp;&amp; test_bit(ABS_Z, bitmask_abs);</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineNoCov">          0 :         is_accelerometer = test_bit(INPUT_PROP_ACCELEROMETER, bitmask_props);</span></a>
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineNoCov">          0 :         if (!has_keys &amp;&amp; has_3d_coordinates)</span></a>
+<a name="160"><span class="lineNum">     160 </span>            :                 is_accelerometer = true;</a>
+<a name="161"><span class="lineNum">     161 </span>            : </a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineNoCov">          0 :         if (is_accelerometer) {</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_ACCELEROMETER&quot;, &quot;1&quot;);</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineNoCov">          0 :                 return true;</span></a>
+<a name="165"><span class="lineNum">     165 </span>            :         }</a>
+<a name="166"><span class="lineNum">     166 </span>            : </a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :         is_pointing_stick = test_bit(INPUT_PROP_POINTING_STICK, bitmask_props);</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :         stylus_or_pen = test_bit(BTN_STYLUS, bitmask_key) || test_bit(BTN_TOOL_PEN, bitmask_key);</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineNoCov">          0 :         finger_but_no_pen = test_bit(BTN_TOOL_FINGER, bitmask_key) &amp;&amp; !test_bit(BTN_TOOL_PEN, bitmask_key);</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineNoCov">          0 :         for (button = BTN_MOUSE; button &lt; BTN_JOYSTICK &amp;&amp; !has_mouse_button; button++)</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :                 has_mouse_button = test_bit(button, bitmask_key);</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineNoCov">          0 :         has_rel_coordinates = test_bit(EV_REL, bitmask_ev) &amp;&amp; test_bit(REL_X, bitmask_rel) &amp;&amp; test_bit(REL_Y, bitmask_rel);</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineNoCov">          0 :         has_mt_coordinates = test_bit(ABS_MT_POSITION_X, bitmask_abs) &amp;&amp; test_bit(ABS_MT_POSITION_Y, bitmask_abs);</span></a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span>            :         /* unset has_mt_coordinates if devices claims to have all abs axis */</a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :         if (has_mt_coordinates &amp;&amp; test_bit(ABS_MT_SLOT, bitmask_abs) &amp;&amp; test_bit(ABS_MT_SLOT - 1, bitmask_abs))</span></a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :                 has_mt_coordinates = false;</span></a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :         is_direct = test_bit(INPUT_PROP_DIRECT, bitmask_props);</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :         has_touch = test_bit(BTN_TOUCH, bitmask_key);</span></a>
+<a name="180"><span class="lineNum">     180 </span>            : </a>
+<a name="181"><span class="lineNum">     181 </span>            :         /* joysticks don't necessarily have buttons; e. g.</a>
+<a name="182"><span class="lineNum">     182 </span>            :          * rudders/pedals are joystick-like, but buttonless; they have</a>
+<a name="183"><span class="lineNum">     183 </span>            :          * other fancy axes. Others have buttons only but no axes.</a>
+<a name="184"><span class="lineNum">     184 </span>            :          *</a>
+<a name="185"><span class="lineNum">     185 </span>            :          * The BTN_JOYSTICK range starts after the mouse range, so a mouse</a>
+<a name="186"><span class="lineNum">     186 </span>            :          * with more than 16 buttons runs into the joystick range (e.g. Mad</a>
+<a name="187"><span class="lineNum">     187 </span>            :          * Catz Mad Catz M.M.O.TE). Skip those.</a>
+<a name="188"><span class="lineNum">     188 </span>            :          */</a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineNoCov">          0 :         if (!test_bit(BTN_JOYSTICK - 1, bitmask_key)) {</span></a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineNoCov">          0 :                 for (button = BTN_JOYSTICK; button &lt; BTN_DIGI &amp;&amp; !has_joystick_axes_or_buttons; button++)</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 :                         has_joystick_axes_or_buttons = test_bit(button, bitmask_key);</span></a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineNoCov">          0 :                 for (button = BTN_TRIGGER_HAPPY1; button &lt;= BTN_TRIGGER_HAPPY40 &amp;&amp; !has_joystick_axes_or_buttons; button++)</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineNoCov">          0 :                         has_joystick_axes_or_buttons = test_bit(button, bitmask_key);</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :                 for (button = BTN_DPAD_UP; button &lt;= BTN_DPAD_RIGHT &amp;&amp; !has_joystick_axes_or_buttons; button++)</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineNoCov">          0 :                         has_joystick_axes_or_buttons = test_bit(button, bitmask_key);</span></a>
+<a name="196"><span class="lineNum">     196 </span>            :         }</a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineNoCov">          0 :         for (axis = ABS_RX; axis &lt; ABS_PRESSURE &amp;&amp; !has_joystick_axes_or_buttons; axis++)</span></a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineNoCov">          0 :                 has_joystick_axes_or_buttons = test_bit(axis, bitmask_abs);</span></a>
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :         if (has_abs_coordinates) {</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :                 if (stylus_or_pen)</span></a>
+<a name="202"><span class="lineNum">     202 </span>            :                         is_tablet = true;</a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineNoCov">          0 :                 else if (finger_but_no_pen &amp;&amp; !is_direct)</span></a>
+<a name="204"><span class="lineNum">     204 </span>            :                         is_touchpad = true;</a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :                 else if (has_mouse_button)</span></a>
+<a name="206"><span class="lineNum">     206 </span>            :                         /* This path is taken by VMware's USB mouse, which has</a>
+<a name="207"><span class="lineNum">     207 </span>            :                          * absolute axes, but no touch/pressure button. */</a>
+<a name="208"><span class="lineNum">     208 </span>            :                         is_mouse = true;</a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineNoCov">          0 :                 else if (has_touch || is_direct)</span></a>
+<a name="210"><span class="lineNum">     210 </span>            :                         is_touchscreen = true;</a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineNoCov">          0 :                 else if (has_joystick_axes_or_buttons)</span></a>
+<a name="212"><span class="lineNum">     212 </span>            :                         is_joystick = true;</a>
+<a name="213"><span class="lineNum">     213 </span>            :         } else if (has_joystick_axes_or_buttons) {</a>
+<a name="214"><span class="lineNum">     214 </span>            :                 is_joystick = true;</a>
+<a name="215"><span class="lineNum">     215 </span>            :         }</a>
+<a name="216"><span class="lineNum">     216 </span>            : </a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :         if (has_mt_coordinates) {</span></a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineNoCov">          0 :                 if (stylus_or_pen)</span></a>
+<a name="219"><span class="lineNum">     219 </span>            :                         is_tablet = true;</a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 else if (finger_but_no_pen &amp;&amp; !is_direct)</span></a>
+<a name="221"><span class="lineNum">     221 </span>            :                         is_touchpad = true;</a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 else if (has_touch || is_direct)</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineNoCov">          0 :                         is_touchscreen = true;</span></a>
+<a name="224"><span class="lineNum">     224 </span>            :         }</a>
+<a name="225"><span class="lineNum">     225 </span>            : </a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineNoCov">          0 :         if (!is_tablet &amp;&amp; !is_touchpad &amp;&amp; !is_joystick &amp;&amp;</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineNoCov">          0 :             has_mouse_button &amp;&amp;</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineNoCov">          0 :             (has_rel_coordinates ||</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineNoCov">          0 :             !has_abs_coordinates)) /* mouse buttons and no axis */</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineNoCov">          0 :                 is_mouse = true;</span></a>
+<a name="231"><span class="lineNum">     231 </span>            : </a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineNoCov">          0 :         if (is_pointing_stick)</span></a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_POINTINGSTICK&quot;, &quot;1&quot;);</span></a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineNoCov">          0 :         if (is_mouse)</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_MOUSE&quot;, &quot;1&quot;);</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineNoCov">          0 :         if (is_touchpad)</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_TOUCHPAD&quot;, &quot;1&quot;);</span></a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineNoCov">          0 :         if (is_touchscreen)</span></a>
+<a name="239"><span class="lineNum">     239 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_TOUCHSCREEN&quot;, &quot;1&quot;);</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineNoCov">          0 :         if (is_joystick)</span></a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_JOYSTICK&quot;, &quot;1&quot;);</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineNoCov">          0 :         if (is_tablet)</span></a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_TABLET&quot;, &quot;1&quot;);</span></a>
+<a name="244"><span class="lineNum">     244 </span>            : </a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineNoCov">          0 :         return is_tablet || is_mouse || is_touchpad || is_touchscreen || is_joystick || is_pointing_stick;</span></a>
+<a name="246"><span class="lineNum">     246 </span>            : }</a>
+<a name="247"><span class="lineNum">     247 </span>            : </a>
+<a name="248"><span class="lineNum">     248 </span>            : /* key like devices */</a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 : static bool test_key(sd_device *dev,</span></a>
+<a name="250"><span class="lineNum">     250 </span>            :                      const unsigned long* bitmask_ev,</a>
+<a name="251"><span class="lineNum">     251 </span>            :                      const unsigned long* bitmask_key,</a>
+<a name="252"><span class="lineNum">     252 </span>            :                      bool test) {</a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :         unsigned i;</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineNoCov">          0 :         unsigned long found;</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineNoCov">          0 :         unsigned long mask;</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineNoCov">          0 :         bool ret = false;</span></a>
+<a name="257"><span class="lineNum">     257 </span>            : </a>
+<a name="258"><span class="lineNum">     258 </span>            :         /* do we have any KEY_* capability? */</a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineNoCov">          0 :         if (!test_bit(EV_KEY, bitmask_ev)) {</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineNoCov">          0 :                 log_device_debug(dev, &quot;test_key: no EV_KEY capability&quot;);</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineNoCov">          0 :                 return false;</span></a>
+<a name="262"><span class="lineNum">     262 </span>            :         }</a>
+<a name="263"><span class="lineNum">     263 </span>            : </a>
+<a name="264"><span class="lineNum">     264 </span>            :         /* only consider KEY_* here, not BTN_* */</a>
+<a name="265"><span class="lineNum">     265 </span>            :         found = 0;</a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; BTN_MISC/BITS_PER_LONG; ++i) {</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineNoCov">          0 :                 found |= bitmask_key[i];</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineNoCov">          0 :                 log_device_debug(dev, &quot;test_key: checking bit block %lu for any keys; found=%i&quot;, (unsigned long)i*BITS_PER_LONG, found &gt; 0);</span></a>
+<a name="269"><span class="lineNum">     269 </span>            :         }</a>
+<a name="270"><span class="lineNum">     270 </span>            :         /* If there are no keys in the lower block, check the higher blocks */</a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :         if (!found) {</span></a>
+<a name="272"><span class="lineNum">     272 </span>            :                 unsigned block;</a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineNoCov">          0 :                 for (block = 0; block &lt; (sizeof(high_key_blocks) / sizeof(struct range)); ++block) {</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineNoCov">          0 :                         for (i = high_key_blocks[block].start; i &lt; high_key_blocks[block].end; ++i) {</span></a>
+<a name="275"><span class="lineNum">     275 </span><span class="lineNoCov">          0 :                                 if (test_bit(i, bitmask_key)) {</span></a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :                                         log_device_debug(dev, &quot;test_key: Found key %x in high block&quot;, i);</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineNoCov">          0 :                                         found = 1;</span></a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineNoCov">          0 :                                         break;</span></a>
+<a name="279"><span class="lineNum">     279 </span>            :                                 }</a>
+<a name="280"><span class="lineNum">     280 </span>            :                         }</a>
+<a name="281"><span class="lineNum">     281 </span>            :                 }</a>
+<a name="282"><span class="lineNum">     282 </span>            :         }</a>
+<a name="283"><span class="lineNum">     283 </span>            : </a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineNoCov">          0 :         if (found &gt; 0) {</span></a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_KEY&quot;, &quot;1&quot;);</span></a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineNoCov">          0 :                 ret = true;</span></a>
+<a name="287"><span class="lineNum">     287 </span>            :         }</a>
+<a name="288"><span class="lineNum">     288 </span>            : </a>
+<a name="289"><span class="lineNum">     289 </span>            :         /* the first 32 bits are ESC, numbers, and Q to D; if we have all of</a>
+<a name="290"><span class="lineNum">     290 </span>            :          * those, consider it a full keyboard; do not test KEY_RESERVED, though */</a>
+<a name="291"><span class="lineNum">     291 </span><span class="lineNoCov">          0 :         mask = 0xFFFFFFFE;</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineNoCov">          0 :         if (FLAGS_SET(bitmask_key[0], mask)) {</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT_KEYBOARD&quot;, &quot;1&quot;);</span></a>
+<a name="294"><span class="lineNum">     294 </span><span class="lineNoCov">          0 :                 ret = true;</span></a>
+<a name="295"><span class="lineNum">     295 </span>            :         }</a>
+<a name="296"><span class="lineNum">     296 </span>            : </a>
+<a name="297"><span class="lineNum">     297 </span>            :         return ret;</a>
+<a name="298"><span class="lineNum">     298 </span>            : }</a>
+<a name="299"><span class="lineNum">     299 </span>            : </a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineNoCov">          0 : static int builtin_input_id(sd_device *dev, int argc, char *argv[], bool test) {</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineNoCov">          0 :         sd_device *pdev;</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineNoCov">          0 :         unsigned long bitmask_ev[NBITS(EV_MAX)];</span></a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineNoCov">          0 :         unsigned long bitmask_abs[NBITS(ABS_MAX)];</span></a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineNoCov">          0 :         unsigned long bitmask_key[NBITS(KEY_MAX)];</span></a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineNoCov">          0 :         unsigned long bitmask_rel[NBITS(REL_MAX)];</span></a>
+<a name="306"><span class="lineNum">     306 </span><span class="lineNoCov">          0 :         unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)];</span></a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineNoCov">          0 :         const char *sysname, *devnode;</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineNoCov">          0 :         bool is_pointer;</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineNoCov">          0 :         bool is_key;</span></a>
+<a name="310"><span class="lineNum">     310 </span>            : </a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineNoCov">          0 :         assert(dev);</span></a>
+<a name="312"><span class="lineNum">     312 </span>            : </a>
+<a name="313"><span class="lineNum">     313 </span>            :         /* walk up the parental chain until we find the real input device; the</a>
+<a name="314"><span class="lineNum">     314 </span>            :          * argument is very likely a subdevice of this, like eventN */</a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :         for (pdev = dev; pdev; ) {</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineNoCov">          0 :                 const char *s;</span></a>
+<a name="317"><span class="lineNum">     317 </span>            : </a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineNoCov">          0 :                 if (sd_device_get_sysattr_value(pdev, &quot;capabilities/ev&quot;, &amp;s) &gt;= 0)</span></a>
+<a name="319"><span class="lineNum">     319 </span>            :                         break;</a>
+<a name="320"><span class="lineNum">     320 </span>            : </a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineNoCov">          0 :                 if (sd_device_get_parent_with_subsystem_devtype(pdev, &quot;input&quot;, NULL, &amp;pdev) &gt;= 0)</span></a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineNoCov">          0 :                         continue;</span></a>
+<a name="323"><span class="lineNum">     323 </span>            : </a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :                 pdev = NULL;</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineNoCov">          0 :                 break;</span></a>
+<a name="326"><span class="lineNum">     326 </span>            :         }</a>
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineNoCov">          0 :         if (pdev) {</span></a>
+<a name="329"><span class="lineNum">     329 </span>            :                 /* Use this as a flag that input devices were detected, so that this</a>
+<a name="330"><span class="lineNum">     330 </span>            :                  * program doesn't need to be called more than once per device */</a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineNoCov">          0 :                 udev_builtin_add_property(dev, test, &quot;ID_INPUT&quot;, &quot;1&quot;);</span></a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :                 get_cap_mask(pdev, &quot;capabilities/ev&quot;, bitmask_ev, sizeof(bitmask_ev), test);</span></a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineNoCov">          0 :                 get_cap_mask(pdev, &quot;capabilities/abs&quot;, bitmask_abs, sizeof(bitmask_abs), test);</span></a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineNoCov">          0 :                 get_cap_mask(pdev, &quot;capabilities/rel&quot;, bitmask_rel, sizeof(bitmask_rel), test);</span></a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineNoCov">          0 :                 get_cap_mask(pdev, &quot;capabilities/key&quot;, bitmask_key, sizeof(bitmask_key), test);</span></a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineNoCov">          0 :                 get_cap_mask(pdev, &quot;properties&quot;, bitmask_props, sizeof(bitmask_props), test);</span></a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineNoCov">          0 :                 is_pointer = test_pointers(dev, bitmask_ev, bitmask_abs,</span></a>
+<a name="338"><span class="lineNum">     338 </span>            :                                            bitmask_key, bitmask_rel,</a>
+<a name="339"><span class="lineNum">     339 </span>            :                                            bitmask_props, test);</a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineNoCov">          0 :                 is_key = test_key(dev, bitmask_ev, bitmask_key, test);</span></a>
+<a name="341"><span class="lineNum">     341 </span>            :                 /* Some evdev nodes have only a scrollwheel */</a>
+<a name="342"><span class="lineNum">     342 </span><span class="lineNoCov">          0 :                 if (!is_pointer &amp;&amp; !is_key &amp;&amp; test_bit(EV_REL, bitmask_ev) &amp;&amp;</span></a>
+<a name="343"><span class="lineNum">     343 </span><span class="lineNoCov">          0 :                     (test_bit(REL_WHEEL, bitmask_rel) || test_bit(REL_HWHEEL, bitmask_rel)))</span></a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineNoCov">          0 :                         udev_builtin_add_property(dev, test, &quot;ID_INPUT_KEY&quot;, &quot;1&quot;);</span></a>
+<a name="345"><span class="lineNum">     345 </span><span class="lineNoCov">          0 :                 if (test_bit(EV_SW, bitmask_ev))</span></a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineNoCov">          0 :                         udev_builtin_add_property(dev, test, &quot;ID_INPUT_SWITCH&quot;, &quot;1&quot;);</span></a>
+<a name="347"><span class="lineNum">     347 </span>            : </a>
+<a name="348"><span class="lineNum">     348 </span>            :         }</a>
+<a name="349"><span class="lineNum">     349 </span>            : </a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineNoCov">          0 :         if (sd_device_get_devname(dev, &amp;devnode) &gt;= 0 &amp;&amp;</span></a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineNoCov">          0 :             sd_device_get_sysname(dev, &amp;sysname) &gt;= 0 &amp;&amp;</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineNoCov">          0 :             startswith(sysname, &quot;event&quot;))</span></a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineNoCov">          0 :                 extract_info(dev, devnode, test);</span></a>
+<a name="354"><span class="lineNum">     354 </span>            : </a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineNoCov">          0 :         return 0;</span></a>
+<a name="356"><span class="lineNum">     356 </span>            : }</a>
+<a name="357"><span class="lineNum">     357 </span>            : </a>
+<a name="358"><span class="lineNum">     358 </span>            : const UdevBuiltin udev_builtin_input_id = {</a>
+<a name="359"><span class="lineNum">     359 </span>            :         .name = &quot;input_id&quot;,</a>
+<a name="360"><span class="lineNum">     360 </span>            :         .cmd = builtin_input_id,</a>
+<a name="361"><span class="lineNum">     361 </span>            :         .help = &quot;Input device properties&quot;,</a>
+<a name="362"><span class="lineNum">     362 </span>            : };</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

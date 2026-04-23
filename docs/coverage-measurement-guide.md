@@ -124,7 +124,38 @@ grep "b_coverage" /home/choyj/GBS-ROOT/local/repos/tizen/x86_64/logs/success/sys
 
 ## Step 3: 에뮬레이터 배포
 
+### 3-1. 바이너리 해시 검사 (재배포 필요 여부 판단)
+
+coverage 측정 전에 반드시 에뮬레이터의 systemd 바이너리가 빌드된 RPM과 동일한지 확인한다.
+에뮬레이터가 스냅샷에서 복원되거나 재설치된 경우 이전 coverage 빌드가 사라질 수 있다.
+
 ```bash
+RPMS=/home/choyj/GBS-ROOT/local/repos/tizen/x86_64/RPMS
+
+# 빌드 RPM에서 systemd 바이너리 추출하여 해시 계산
+mkdir -p /tmp/rpm-check
+rpm2cpio "${RPMS}/systemd-244-0.x86_64.rpm" | \
+    cpio -id --quiet './usr/lib/systemd/systemd' -D /tmp/rpm-check/
+RPM_HASH=$(md5sum /tmp/rpm-check/usr/lib/systemd/systemd | awk '{print $1}')
+
+# 에뮬레이터 바이너리 해시 계산
+EMU_HASH=$(sdb -e shell "md5sum /usr/lib/systemd/systemd" | awk '{print $1}')
+
+echo "RPM 해시: ${RPM_HASH}"
+echo "에뮬: ${EMU_HASH}"
+
+if [ "${RPM_HASH}" = "${EMU_HASH}" ]; then
+    echo "OK: 해시 일치 → 재배포 불필요"
+else
+    echo "MISMATCH: 해시 불일치 → Step 3-2 진행"
+fi
+```
+
+### 3-2. RPM 설치 (해시 불일치 시에만)
+
+```bash
+RPMS=/home/choyj/GBS-ROOT/local/repos/tizen/x86_64/RPMS
+
 # 1. 에뮬레이터 연결 확인
 sdb devices
 # 출력: emulator-26101    device    T-10.0-x86_64
@@ -133,8 +164,8 @@ sdb devices
 sdb -e root on
 
 # 3. RPM push
-sdb -e push /home/choyj/GBS-ROOT/local/repos/tizen/x86_64/RPMS/systemd-244-0.x86_64.rpm /tmp/
-sdb -e push /home/choyj/GBS-ROOT/local/repos/tizen/x86_64/RPMS/libsystemd-244-0.x86_64.rpm /tmp/
+sdb -e push "${RPMS}/systemd-244-0.x86_64.rpm" /tmp/
+sdb -e push "${RPMS}/libsystemd-244-0.x86_64.rpm" /tmp/
 
 # 4. 설치
 sdb -e shell "rpm -Uvh --force /tmp/libsystemd-244-0.x86_64.rpm /tmp/systemd-244-0.x86_64.rpm"
@@ -184,7 +215,17 @@ case 30: {
 
 ## Step 5: gcov dump 트리거 및 수집
 
+> **중요:** 부팅 완료 후 1분 대기 후 dump를 트리거한다.
+> 이유: systemd가 부팅 초기화(target 활성화, 서비스 시작 등)를 모두 완료한 뒤의
+> coverage를 측정해야 부팅 시 실행되는 코드 경로를 빠짐없이 수집할 수 있다.
+
 ```bash
+# 부팅 완료 확인 후 1분 대기
+sdb wait-for-device && sdb -e root on
+echo "부팅 완료: $(date), 1분 대기 시작"
+sleep 60
+echo "1분 경과: $(date)"
+
 # SIGRTMIN 값 확인 (에뮬레이터에서 34 → SIGRTMIN+30=64)
 sdb -e shell "python3 -c 'import signal; print(signal.SIGRTMIN)'"
 
@@ -244,16 +285,19 @@ find "${GCDA_BASE}" -name '*.gcda' | while read gcda; do
 done
 ```
 
-### lcov 실행
+### lcov 실행 (전체 재현 가이드)
+
+> **주의:** `/home/abuild/rpmbuild/BUILD/systemd-244/` 경로가 호스트에 없으므로, 아래 순서대로 경로 치환을 포함한 방식으로 실행해야 한다.
 
 ```bash
 LCOV=/tmp/lcov-extracted/usr/bin/lcov
 GENHTML=/tmp/lcov-extracted/usr/bin/genhtml
 GCNO_BASE=/home/choyj/GBS-ROOT/local/BUILD-ROOTS/scratch.x86_64.0/home/abuild/rpmbuild/BUILD/systemd-244/_build
+SRC=/home/choyj/workspace/systemd-optimization/systemd
 OUT=/home/choyj/workspace/systemd-optimization/coverage-report
 mkdir -p "${OUT}"
 
-# coverage.info 생성
+# 1. 실행 coverage 수집
 perl "${LCOV}" \
     --gcov-tool /tmp/gcov-wrapper.sh \
     --capture \
@@ -261,44 +305,61 @@ perl "${LCOV}" \
     --output-file "${OUT}/coverage.info" \
     --ignore-errors source,gcov
 
-# HTML 리포트 생성
+# 2. baseline 생성 (미실행 파일도 0%로 포함)
+perl "${LCOV}" \
+    --gcov-tool /tmp/gcov-wrapper.sh \
+    --capture --initial \
+    --directory "${GCNO_BASE}" \
+    --output-file "${OUT}/baseline.info" \
+    --ignore-errors source,gcov
+
+# 3. 경로 치환 (/home/abuild/... → 실제 소스 경로)
+#    이 단계 없으면 HTML 소스가 모두 /* EOF */로 표시됨
+sed "s|SF:/home/abuild/rpmbuild/BUILD/systemd-244/|SF:${SRC}/|g" \
+    "${OUT}/coverage.info" > "${OUT}/coverage-fixed.info"
+sed "s|SF:/home/abuild/rpmbuild/BUILD/systemd-244/|SF:${SRC}/|g" \
+    "${OUT}/baseline.info" > "${OUT}/baseline-fixed.info"
+
+# 4. baseline + 실행 coverage 합산
+perl "${LCOV}" \
+    --add-tracefile "${OUT}/baseline-fixed.info" \
+    --add-tracefile "${OUT}/coverage-fixed.info" \
+    --output-file "${OUT}/combined.info" \
+    --ignore-errors source
+
+# 5. HTML 리포트 생성
+rm -rf "${OUT}/html"
 perl "${GENHTML}" \
-    "${OUT}/coverage.info" \
+    "${OUT}/combined.info" \
     --output-directory "${OUT}/html" \
     --legend --show-details \
     --ignore-errors source \
-    --prefix /home/abuild/rpmbuild/BUILD/systemd-244
-
-# 결과: Overall coverage rate: lines 20.9%, functions 28.4%
+    --prefix "${SRC}"
 ```
+
+### 왜 /home/abuild/... 경로인가
+
+gcno 파일은 GBS 빌드 컨테이너 내부 경로(`/home/abuild/rpmbuild/BUILD/systemd-244/`)를 절대경로로 저장한다.
+호스트에는 이 경로가 존재하지 않으므로 (`sudo mkdir /home/abuild`가 필요하고 불편), 
+coverage.info의 `SF:` 라인을 `sed`로 일괄 치환하는 방식을 사용한다.
 
 ### 0% 파일 목록 추출
 
 ```bash
-# 전체 0% 파일
-perl "${LCOV}" --list "${OUT}/coverage.info" 2>/dev/null | grep "0\.0%" \
-    > "${OUT}/uncovered-all.txt"
-
-# core 디렉토리 0% 파일 (25개)
-perl "${LCOV}" --list "${OUT}/coverage.info" 2>/dev/null | grep "0\.0%" | grep "src/core" \
-    > "${OUT}/uncovered-core.txt"
+# core 디렉토리 0% 파일
+perl "${LCOV}" --list "${OUT}/combined.info" 2>/dev/null | grep "0\.0%" | grep "src/core"
 ```
 
-**측정 결과 (2026-04-23 기준):**
-- 전체 라인 커버리지: **20.9%** (24,564 / 117,674 lines)
-- 전체 함수 커버리지: **28.4%** (1,930 / 6,800 functions)
-- core 디렉토리 0% 파일: **25개**
+**측정 결과 (2026-04-24 기준, 부팅 후 1분 대기):**
+- 소스 파일 수: **921개** (SF 기준, 중복 제거)
+- 전체 라인 커버리지: **14.5%** (27,643 / 191,182 lines) — baseline 포함 정확한 수치
+- 전체 함수 커버리지: **21.0%** (2,240 / 10,682 functions)
+- gcda 파일 수: **304개**
 
-주요 미실행 core 파일:
-```
-src/core/bus-policy.c       (84 lines, 5 functions)
-src/core/busname.c          
-src/core/chown-recursive.c  (63 lines, 3 functions)
-src/core/dbus-automount.c   (20 lines, 3 functions)
-src/core/dbus-mount.c       (57 lines, 10 functions)
-src/core/dbus-timer.c       (168 lines, 8 functions)
-src/core/dynamic-user.c     (5% 커버리지, 400 lines, 25 functions)
-```
+**참고: 컴파일되지 않은 201개 파일 (gcno 없음)**
+- `src/boot/efi/` (11개): UEFI 전용 툴체인, 일반 Linux 바이너리 아님
+- `src/test/`, `src/*/test-*.c` (~30개): RPM에 미포함 테스트 바이너리
+- `src/resolve/`, `src/network/netdev/`, `src/coredump/`, `src/import/` 등 (~160개): Tizen meson 설정에서 비활성화된 데몬/기능
 
 ---
 
@@ -317,7 +378,7 @@ sdb -e shell "cat /proc/1/status | grep -E 'VmRSS|VmSize|VmPeak'"
 
 ---
 
-## 현재 진행 상태 (2026-04-23 기준)
+## 현재 진행 상태 (2026-04-24 기준)
 
 - [x] 계획 수립
 - [x] `src/core/manager.c` 패치 (SIGRTMIN+30 등록 + __gcov_dump 핸들러 + setenv)
@@ -327,6 +388,8 @@ sdb -e shell "cat /proc/1/status | grep -E 'VmRSS|VmSize|VmPeak'"
 - [x] 에뮬레이터 배포 및 재부팅
 - [x] gcov dump 트리거 및 gcda 수집 (345개 파일)
 - [x] lcov 리포트 생성 (HTML + coverage.info)
+- [x] coverage 리포트 수정 (경로 치환 + baseline 추가 → `/* EOF */` 해결, 누락 파일 추가)
+- [x] 부팅 후 1분 대기 후 재측정 (라인 14.5%, 함수 21.0%)
 - [ ] 미사용 코드 분석 및 제거 ← 다음 단계
 
 ---

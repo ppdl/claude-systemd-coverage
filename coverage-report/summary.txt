@@ -1,0 +1,325 @@
+=== Overall Coverage ===
+[/usr/lib64/gcc/x86_64-tizen-linux-gnu/14.2.0/include/]
+cpuid.h                                        | 0.0%    11|    -   0|    -    0
+================================================================================
+                                         Total:|20.9%  117k|28.4%  6k|    -    0
+
+=== Files with 0% Coverage ===
+_build/src/basic/af-from-name.gperf            | 0.0%    28| 0.0%   3|    -    0
+_build/src/basic/arphrd-from-name.gperf        | 0.0%    19| 0.0%   3|    -    0
+_build/src/basic/arphrd-to-name.h              | 0.0%    69| 0.0%   1|    -    0
+_build/src/basic/cap-from-name.gperf           | 0.0%    28| 0.0%   3|    -    0
+_build/src/basic/errno-from-name.gperf         | 0.0%    30| 0.0%   3|    -    0
+_build/src/journal/audit_type-to-name.h        | 0.0%   101| 0.0%   1|    -    0
+_build/src/shared/ip-protocol-from-name.gperf  | 0.0%    25| 0.0%   3|    -    0
+_build/src/udev/keyboard-keys-from-name.gperf  | 0.0%    36| 0.0%   2|    -    0
+src/basic/MurmurHash2.c                        | 0.0%    24| 0.0%   1|    -    0
+src/basic/af-list.c                            | 0.0%    12| 0.0%   3|    -    0
+src/basic/alloc-util.c                         | 0.0%    53| 0.0%   4|    -    0
+src/basic/architecture.c                       | 0.0%    13| 0.0%   3|    -    0
+src/basic/arphrd-list.c                        | 0.0%     6| 0.0%   1|    -    0
+src/basic/audit-util.c                         | 0.0%    42| 0.0%   3|    -    0
+src/basic/audit-util.h                         | 0.0%     2|    -   0|    -    0
+src/basic/blockdev-util.c                      | 0.0%    90| 0.0%   4|    -    0
+src/basic/btrfs-util.c                         | 0.0%   928| 0.0%  58|    -    0
+src/basic/btrfs-util.h                         | 0.0%     2|    -   0|    -    0
+src/basic/bus-label.c                          | 0.0%    38| 0.0%   2|    -    0
+src/basic/bus-label.h                          | 0.0%     2| 0.0%   1|    -    0
+src/basic/cap-list.c                           | 0.0%    57| 0.0%   5|    -    0
+src/basic/capability-util.c                    | 0.0%   301| 0.0%  12|    -    0
+src/basic/cgroup-util.c                        | 0.0%  1072| 0.0%  73|    -    0
+src/basic/chattr-util.c                        | 0.0%    44| 0.0%   4|    -    0
+src/basic/conf-files.c                         | 0.0%   151| 0.0%   8|    -    0
+src/basic/copy.c                               | 0.0%   421| 0.0%  17|    -    0
+src/basic/copy.h                               | 0.0%    10| 0.0%   1|    -    0
+src/basic/device-nodes.c                       | 0.0%    28| 0.0%   2|    -    0
+src/basic/dirent-util.c                        | 0.0%    29| 0.0%   4|    -    0
+src/basic/efivars.c                            | 0.0%   119| 0.0%   6|    -    0
+src/basic/env-file.c                           | 0.0%   263| 0.0%  13|    -    0
+src/basic/env-util.c                           | 0.0%   363| 0.0%  23|    -    0
+src/basic/env-util.h                           | 0.0%     6| 0.0%   2|    -    0
+src/basic/errno-list.c                         | 0.0%    10| 0.0%   2|    -    0
+src/basic/errno-list.h                         | 0.0%     2|    -   0|    -    0
+src/basic/errno-util.h                         |31.8%    22|50.0%   4|    -    0
+src/basic/escape.c                             | 0.0%   305| 0.0%  13|    -    0
+src/basic/escape.h                             | 0.0%     2|    -   0|    -    0
+src/basic/ether-addr-util.c                    | 0.0%    39| 0.0%   4|    -    0
+src/basic/extract-word.c                       | 0.0%   127| 0.0%   3|    -    0
+src/basic/fd-util.c                            | 0.0%   419| 0.0%  23|    -    0
+src/basic/fileio.c                             | 0.0%   494| 0.0%  27|    -    0
+src/basic/fileio.h                             |60.0%    10|    -   0|    -    0
+src/basic/format-util.c                        | 0.0%    30| 0.0%   2|    -    0
+src/basic/format-util.h                        | 0.0%     4|    -   0|    -    0
+src/basic/fs-util.c                            | 0.0%   660| 0.0%  41|    -    0
+src/basic/fs-util.h                            | 9.1%    11| 0.0%   2|    -    0
+src/basic/glob-util.c                          | 0.0%    40| 0.0%   4|    -    0
+src/basic/gunicode.c                           | 0.0%    14| 0.0%   2|    -    0
+src/basic/hash-funcs.c                         | 0.0%    32| 0.0%   8|    -    0
+src/basic/hashmap.c                            | 0.0%   858| 0.0%  67|    -    0
+src/basic/hexdecoct.c                          | 0.0%   463| 0.0%  21|    -    0
+src/basic/hexdecoct.h                          | 0.0%     4|    -   0|    -    0
+src/basic/hostname-util.c                      | 0.0%   141| 0.0%  12|    -    0
+src/basic/in-addr-util.h                       |60.0%     5| 100%   1|    -    0
+src/basic/io-util.c                            | 0.0%   177| 0.0%  18|    -    0
+src/basic/io-util.h                            | 0.0%    15| 0.0%   1|    -    0
+src/basic/ioprio.h                             |50.0%     4|    -   0|    -    0
+src/basic/kbd-util.c                           | 0.0%    47| 0.0%   3|    -    0
+src/basic/khash.c                              | 0.0%   157| 0.0%  13|    -    0
+src/basic/khash.h                              | 0.0%     1|    -   0|    -    0
+src/basic/label.c                              | 0.0%    26| 0.0%   3|    -    0
+src/basic/limits-util.c                        |27.6%    76|50.0%   4|    -    0
+src/basic/locale-util.c                        | 0.0%   163| 0.0%  12|    -    0
+src/basic/locale-util.h                        |40.0%     5|    -   0|    -    0
+src/basic/log.c                                | 0.0%   595| 0.0%  59|    -    0
+src/basic/login-util.c                         | 0.0%     3| 0.0%   1|    -    0
+src/basic/login-util.h                         | 0.0%     2|    -   0|    -    0
+src/basic/memfd-util.c                         | 0.0%    74| 0.0%   7|    -    0
+src/basic/memory-util.c                        | 0.0%    15| 0.0%   2|    -    0
+src/basic/memory-util.h                        |32.3%    31|50.0%   4|    -    0
+src/basic/mempool.c                            | 0.0%    43| 0.0%   4|    -    0
+src/basic/missing_syscall.h                    | 0.0%    22|    -   0|    -    0
+src/basic/mkdir-label.c                        | 0.0%    24| 0.0%   5|    -    0
+src/basic/mkdir.c                              | 0.0%    83| 0.0%   8|    -    0
+src/basic/mountpoint-util.c                    | 0.0%   168| 0.0%  13|    -    0
+src/basic/namespace-util.c                     | 0.0%    89| 0.0%   3|    -    0
+src/basic/ordered-set.c                        | 0.0%    41| 0.0%   5|    -    0
+src/basic/ordered-set.h                        | 0.0%     6|    -   0|    -    0
+src/basic/parse-util.c                         | 0.0%   405| 0.0%  28|    -    0
+src/basic/path-util.c                          | 0.0%   494| 0.0%  38|    -    0
+src/basic/prioq.c                              | 0.0%   136| 0.0%  15|    -    0
+src/basic/proc-cmdline.c                       | 0.0%   175| 0.0%  11|    -    0
+src/basic/proc-cmdline.h                       | 0.0%     4| 0.0%   1|    -    0
+src/basic/process-util.c                       | 0.0%   681| 0.0%  50|    -    0
+src/basic/procfs-util.c                        |13.3%   128|20.0%   5|    -    0
+src/basic/procfs-util.h                        | 0.0%     2|    -   0|    -    0
+src/basic/random-util.c                        | 0.0%   113| 0.0%   6|    -    0
+src/basic/random-util.h                        | 0.0%     4|    -   0|    -    0
+src/basic/ratelimit.c                          | 0.0%    15| 0.0%   1|    -    0
+src/basic/ratelimit.h                          | 0.0%     2|    -   0|    -    0
+src/basic/raw-clone.h                          | 0.0%     7| 0.0%   1|    -    0
+src/basic/raw-reboot.h                         | 0.0%     2| 0.0%   1|    -    0
+src/basic/replace-var.c                        | 0.0%    50| 0.0%   2|    -    0
+src/basic/rlimit-util.c                        | 0.0%   184| 0.0%  16|    -    0
+src/basic/rm-rf.c                              | 0.0%   105| 0.0%   3|    -    0
+src/basic/selinux-util.c                       | 0.0%    40| 0.0%  16|    -    0
+src/basic/set.h                                |80.0%    30| 100%   2|    -    0
+src/basic/sigbus.c                             | 0.0%    57| 0.0%   5|    -    0
+src/basic/signal-util.c                        | 0.0%   121| 0.0%  12|    -    0
+src/basic/signal-util.h                        | 0.0%     8| 0.0%   1|    -    0
+src/basic/siphash24.c                          | 0.0%   103| 0.0%   6|    -    0
+src/basic/smack-util.c                         | 0.0%   110| 0.0%  12|    -    0
+src/basic/socket-label.c                       |51.4%    72|50.0%   2|    -    0
+src/basic/socket-util.c                        | 0.0%   612| 0.0%  46|    -    0
+src/basic/socket-util.h                        |40.0%     5|50.0%   2|    -    0
+src/basic/sort-util.c                          | 0.0%    12| 0.0%   1|    -    0
+src/basic/stat-util.c                          | 0.0%   185| 0.0%  25|    -    0
+src/basic/strbuf.c                             | 0.0%    85| 0.0%   7|    -    0
+src/basic/strbuf.h                             | 0.0%     1|    -   0|    -    0
+src/basic/string-table.c                       | 0.0%     6| 0.0%   1|    -    0
+src/basic/string-util.c                        | 0.0%   541| 0.0%  34|    -    0
+src/basic/strv.c                               | 0.0%   486| 0.0%  48|    -    0
+src/basic/strv.h                               |64.3%    14| 0.0%   1|    -    0
+src/basic/strxcpyx.c                           | 0.0%    64| 0.0%   7|    -    0
+src/basic/syslog-util.c                        | 0.0%    34| 0.0%   7|    -    0
+src/basic/terminal-util.c                      | 0.0%   692| 0.0%  46|    -    0
+src/basic/terminal-util.h                      | 0.0%    11| 0.0%   3|    -    0
+src/basic/time-util.c                          | 0.0%   726| 0.0%  45|    -    0
+src/basic/time-util.h                          |63.6%    22| 0.0%   2|    -    0
+src/basic/tmpfile-util.c                       | 0.0%   157| 0.0%  10|    -    0
+src/basic/unaligned.h                          | 0.0%    15|    -   0|    -    0
+src/basic/unit-def.c                           | 0.0%    43| 0.0%  38|    -    0
+src/basic/unit-name.c                          | 0.0%   385| 0.0%  27|    -    0
+src/basic/user-util.c                          | 0.0%   446| 0.0%  31|    -    0
+src/basic/utf8.c                               | 0.0%   280| 0.0%  19|    -    0
+src/basic/utf8.h                               | 0.0%     6|    -   0|    -    0
+src/basic/util.c                               | 0.0%   127| 0.0%   9|    -    0
+src/basic/util.h                               |21.4%    14| 0.0%   2|    -    0
+src/basic/virt.c                               | 0.0%   275| 0.0%  16|    -    0
+src/basic/virt.h                               | 0.0%     4|    -   0|    -    0
+src/basic/xattr-util.c                         | 0.0%   133| 0.0%   8|    -    0
+src/core/bus-policy.c                          | 0.0%    84| 0.0%   5|    -    0
+src/core/busname.h                             | 0.0%     1|    -   0|    -    0
+src/core/cgroup.h                              | 0.0%     2|    -   0|    -    0
+src/core/chown-recursive.c                     | 0.0%    63| 0.0%   3|    -    0
+src/core/dbus-automount.c                      | 0.0%    20| 0.0%   3|    -    0
+src/core/dbus-busname.c                        | 0.0%     1| 0.0%   1|    -    0
+src/core/dbus-job.c                            |50.7%   152|60.0%  15|    -    0
+src/core/dbus-mount.c                          | 0.0%    57| 0.0%  10|    -    0
+src/core/dbus-scope.c                          |42.0%   119|50.0%   8|    -    0
+src/core/dbus-slice.c                          | 0.0%    10| 0.0%   2|    -    0
+src/core/dbus-swap.c                           | 0.0%    22| 0.0%   5|    -    0
+src/core/dbus-timer.c                          | 0.0%   168| 0.0%   8|    -    0
+src/core/dbus-util.c                           |20.0%    45|12.5%   8|    -    0
+src/core/dbus-util.h                           | 0.0%     4|    -   0|    -    0
+src/core/dynamic-user.c                        | 5.0%   400|20.0%  25|    -    0
+src/core/emergency-action.c                    | 6.7%    75|20.0%   5|    -    0
+src/core/execute.h                             | 0.0%     3| 0.0%   1|    -    0
+src/core/kill.c                                |52.9%    17|50.0%   6|    -    0
+src/core/killall.c                             | 0.0%   127| 0.0%   5|    -    0
+src/core/manager.h                             |25.0%     4| 0.0%   1|    -    0
+src/core/scope.c                               |42.1%   299|50.0%  30|    -    0
+src/core/socket.h                              |50.0%     2|    -   0|    -    0
+src/core/timer.c                               | 0.0%   451| 0.0%  33|    -    0
+src/core/timer.h                               | 0.0%     1|    -   0|    -    0
+src/core/unit.h                                |77.3%    22|50.0%   2|    -    0
+src/journal/catalog.c                          | 0.0%   415| 0.0%  17|    -    0
+src/journal/compress.c                         | 0.0%   181| 0.0%  15|    -    0
+src/journal/compress.h                         | 0.0%     4|    -   0|    -    0
+src/journal/journal-file.c                     | 0.0%  1753| 0.0%  82|    -    0
+src/journal/journal-file.h                     | 0.0%     5| 0.0%   1|    -    0
+src/journal/journal-vacuum.c                   | 0.0%   160| 0.0%   4|    -    0
+src/journal/journal-verify.c                   | 0.0%   647| 0.0%  12|    -    0
+src/journal/lookup3.c                          | 0.0%   263| 0.0%   5|    -    0
+src/journal/lookup3.h                          | 0.0%     4| 0.0%   1|    -    0
+src/journal/mmap-cache.c                       | 0.0%   306| 0.0%  26|    -    0
+src/journal/sd-journal.c                       | 0.0%  1662| 0.0%  98|    -    0
+src/libsystemd-network/network-internal.c      | 0.0%   429| 0.0%  20|    -    0
+src/libsystemd-network/sd-dhcp-lease.c         | 0.0%   749| 0.0%  45|    -    0
+src/libsystemd/sd-bus/bus-bloom.c              | 0.0%    65| 0.0%   4|    -    0
+src/libsystemd/sd-bus/bus-container.c          | 0.0%   122| 0.0%   2|    -    0
+src/libsystemd/sd-bus/bus-dump.c               | 0.0%   386| 0.0%   8|    -    0
+src/libsystemd/sd-bus/bus-gvariant.c           | 0.0%   133| 0.0%   6|    -    0
+src/libsystemd/sd-bus/bus-internal.c           |44.0%   134|40.0%  15|    -    0
+src/libsystemd/sd-bus/bus-introspect.c         | 0.0%   108| 0.0%   8|    -    0
+src/libsystemd/sd-event/event-util.c           | 0.0%    44| 0.0%   3|    -    0
+src/libsystemd/sd-hwdb/hwdb-util.c             | 0.0%   344| 0.0%  15|    -    0
+src/libsystemd/sd-hwdb/sd-hwdb.c               | 0.0%   229| 0.0%  15|    -    0
+src/libsystemd/sd-id128/id128-util.c           |36.7%    90|50.0%   8|    -    0
+src/libsystemd/sd-login/sd-login.c             | 0.0%   557| 0.0%  58|    -    0
+src/libsystemd/sd-netlink/generic-netlink.c    | 0.0%    90| 0.0%   6|    -    0
+src/libsystemd/sd-netlink/netlink-socket.c     |48.2%   224|50.0%  12|    -    0
+src/libsystemd/sd-netlink/netlink-util.c       | 0.0%    54| 0.0%   5|    -    0
+src/libsystemd/sd-network/network-util.c       | 0.0%    15| 0.0%   7|    -    0
+src/libsystemd/sd-network/sd-network.c         | 0.0%   236| 0.0%  41|    -    0
+src/libsystemd/sd-resolve/sd-resolve.c         | 0.0%   617| 0.0%  48|    -    0
+src/libsystemd/sd-utf8/sd-utf8.c               | 0.0%     6| 0.0%   2|    -    0
+src/shared/apparmor-util.c                     | 0.0%     8| 0.0%   1|    -    0
+src/shared/ask-password-api.c                  | 0.0%   556| 0.0%  12|    -    0
+src/shared/barrier.c                           | 0.0%   110| 0.0%  11|    -    0
+src/shared/barrier.h                           | 0.0%    10|    -   0|    -    0
+src/shared/base-filesystem.c                   | 0.0%    43| 0.0%   1|    -    0
+src/shared/blkid-util.h                        | 0.0%     1|    -   0|    -    0
+src/shared/boot-timestamps.c                   |60.0%    20| 100%   1|    -    0
+src/shared/bootspec.c                          | 0.0%   824| 0.0%  24|    -    0
+src/shared/bootspec.h                          | 0.0%     9| 0.0%   1|    -    0
+src/shared/bus-polkit.c                        |46.2%    39|50.0%   4|    -    0
+src/shared/bus-unit-procs.c                    | 0.0%   213| 0.0%   7|    -    0
+src/shared/bus-unit-util.c                     | 0.0%  1060| 0.0%  45|    -    0
+src/shared/bus-wait-for-jobs.c                 | 0.0%   156| 0.0%  11|    -    0
+src/shared/bus-wait-for-units.c                | 0.0%   189| 0.0%  16|    -    0
+src/shared/calendarspec.c                      | 0.0%   756| 0.0%  28|    -    0
+src/shared/calendarspec.h                      | 0.0%     1|    -   0|    -    0
+src/shared/cgroup-show.c                       | 0.0%   179| 0.0%   9|    -    0
+src/shared/clean-ipc.c                         | 0.0%   231| 0.0%  10|    -    0
+src/shared/clean-ipc.h                         | 0.0%     2|    -   0|    -    0
+src/shared/clock-util.c                        |23.3%    60|40.0%   5|    -    0
+src/shared/condition.c                         |34.3%   440|40.0%  40|    -    0
+src/shared/condition.h                         |50.0%     4|    -   0|    -    0
+src/shared/dissect-image.c                     | 0.0%   632| 0.0%  20|    -    0
+src/shared/dissect-image.h                     | 0.0%     2|    -   0|    -    0
+src/shared/dm-util.c                           | 0.0%    12| 0.0%   1|    -    0
+src/shared/dns-domain.c                        | 0.0%   587| 0.0%  32|    -    0
+src/shared/dns-domain.h                        | 0.0%    10| 0.0%   1|    -    0
+src/shared/dropin.c                            |50.5%   107|50.0%   6|    -    0
+src/shared/env-file-label.c                    | 0.0%     7| 0.0%   1|    -    0
+src/shared/ethtool-util.c                      | 0.0%   455| 0.0%  29|    -    0
+src/shared/exec-util.c                         |16.8%   220|20.0%  10|    -    0
+src/shared/fileio-label.c                      | 0.0%    12| 0.0%   2|    -    0
+src/shared/fileio-label.h                      | 0.0%     2|    -   0|    -    0
+src/shared/format-table.c                      | 0.0%  1039| 0.0%  49|    -    0
+src/shared/format-table.h                      | 0.0%     3| 0.0%   1|    -    0
+src/shared/generator.c                         | 0.0%   206| 0.0%  12|    -    0
+src/shared/id128-print.c                       | 0.0%    32| 0.0%   2|    -    0
+src/shared/ima-util.c                          | 0.0%     4| 0.0%   1|    -    0
+src/shared/import-util.c                       | 0.0%    85| 0.0%   7|    -    0
+src/shared/install-printf.c                    | 0.0%    60| 0.0%   6|    -    0
+src/shared/install.c                           | 0.0%  1637| 0.0%  78|    -    0
+src/shared/install.h                           | 0.0%     4|    -   0|    -    0
+src/shared/ip-protocol-list.c                  | 0.0%    24| 0.0%   3|    -    0
+src/shared/journal-importer.c                  | 0.0%   256| 0.0%  12|    -    0
+src/shared/journal-util.c                      | 0.0%    70| 0.0%   3|    -    0
+src/shared/linux/ethtool.h                     | 0.0%     5|    -   0|    -    0
+src/shared/local-addresses.c                   | 0.0%   157| 0.0%   3|    -    0
+src/shared/lockfile-util.c                     | 0.0%    58| 0.0%   3|    -    0
+src/shared/logs-show.c                         | 0.0%   783| 0.0%  24|    -    0
+src/shared/loop-util.c                         | 0.0%    81| 0.0%   4|    -    0
+src/shared/loop-util.h                         | 0.0%     1|    -   0|    -    0
+src/shared/machine-image.c                     | 0.0%   603| 0.0%  27|    -    0
+src/shared/machine-image.h                     | 0.0%     8| 0.0%   2|    -    0
+src/shared/machine-pool.c                      | 0.0%    21| 0.0%   2|    -    0
+src/shared/module-util.c                       | 0.0%    32| 0.0%   1|    -    0
+src/shared/mount-util.c                        | 0.0%   241| 0.0%  11|    -    0
+src/shared/mount-util.h                        | 0.0%     1|    -   0|    -    0
+src/shared/nscd-flush.c                        | 0.0%    63| 0.0%   2|    -    0
+src/shared/nsflags.c                           | 0.0%    33| 0.0%   2|    -    0
+src/shared/os-util.c                           |67.7%    62|60.0%   5|    -    0
+src/shared/output-mode.c                       | 0.0%     3| 0.0%   3|    -    0
+src/shared/pretty-print.c                      | 0.0%   167| 0.0%  10|    -    0
+src/shared/ptyfwd.c                            | 0.0%   297| 0.0%  20|    -    0
+src/shared/ptyfwd.h                            | 0.0%     1|    -   0|    -    0
+src/shared/reboot-util.c                       | 0.0%    43| 0.0%   4|    -    0
+src/shared/resolve-util.c                      | 0.0%    12| 0.0%  13|    -    0
+src/shared/securebits-util.c                   |28.6%    42|50.0%   2|    -    0
+src/shared/securebits-util.h                   | 0.0%     5|    -   0|    -    0
+src/shared/serialize.c                         | 0.0%   115| 0.0%  11|    -    0
+src/shared/serialize.h                         | 0.0%     2|    -   0|    -    0
+src/shared/sleep-config.c                      | 0.0%   352| 0.0%  17|    -    0
+src/shared/sleep-config.h                      | 0.0%     3|    -   0|    -    0
+src/shared/switch-root.c                       | 0.0%    55| 0.0%   1|    -    0
+src/shared/tests.c                             | 0.0%    99| 0.0%  11|    -    0
+src/shared/tmpfile-util-label.c                | 0.0%     7| 0.0%   1|    -    0
+src/shared/tomoyo-util.c                       | 0.0%     6| 0.0%   1|    -    0
+src/shared/uid-range.c                         | 0.0%   100| 0.0%   7|    -    0
+src/shared/utmp-wtmp.c                         | 0.0%   206| 0.0%  14|    -    0
+src/shared/vlan-util.c                         | 0.0%    44| 0.0%   4|    -    0
+src/shared/volatile-util.c                     | 0.0%    16| 0.0%   3|    -    0
+src/shared/watchdog.c                          | 0.0%    75| 0.0%   6|    -    0
+src/shared/watchdog.h                          | 0.0%     2|    -   0|    -    0
+src/shared/wifi-util.c                         | 0.0%    64| 0.0%   2|    -    0
+src/shared/xml.c                               | 0.0%   114| 0.0%   2|    -    0
+src/systemctl/sysv-compat.c                    | 0.0%    32| 0.0%   1|    -    0
+src/systemd/sd-dhcp-lease.h                    | 0.0%     1|    -   0|    -    0
+src/systemd/sd-hwdb.h                          | 0.0%     1|    -   0|    -    0
+src/systemd/sd-resolve.h                       | 0.0%     2|    -   0|    -    0
+src/udev/net/link-config-gperf.gperf           | 0.0%    11| 0.0%   1|    -    0
+src/udev/net/link-config.c                     | 0.0%   270| 0.0%  19|    -    0
+src/udev/net/naming-scheme.c                   | 0.0%    28| 0.0%   2|    -    0
+src/udev/net/naming-scheme.h                   | 0.0%     2|    -   0|    -    0
+src/udev/udev-builtin-blkid.c                  | 0.0%   167| 0.0%   4|    -    0
+src/udev/udev-builtin-btrfs.c                  | 0.0%    14| 0.0%   1|    -    0
+src/udev/udev-builtin-hwdb.c                   | 0.0%   105| 0.0%   7|    -    0
+src/udev/udev-builtin-input_id.c               | 0.0%   189| 0.0%   5|    -    0
+src/udev/udev-builtin-keyboard.c               | 0.0%   144| 0.0%   6|    -    0
+src/udev/udev-builtin-kmod.c                   | 0.0%    26| 0.0%   5|    -    0
+src/udev/udev-builtin-net_id.c                 | 0.0%   473| 0.0%  16|    -    0
+src/udev/udev-builtin-net_setup_link.c         | 0.0%    38| 0.0%   4|    -    0
+src/udev/udev-builtin-path_id.c                | 0.0%   373| 0.0%  17|    -    0
+src/udev/udev-builtin-uaccess.c                | 0.0%    31| 0.0%   1|    -    0
+src/udev/udev-builtin-usb_id.c                 | 0.0%   269| 0.0%   5|    -    0
+src/udev/udev-builtin.c                        | 0.0%    60| 0.0%   9|    -    0
+src/udev/udev-ctrl.c                           |39.2%   186|50.0%  16|    -    0
+src/udev/udev-event.c                          | 1.2%   574| 0.0%  19|    -    0
+src/udev/udev-event.h                          | 0.0%     3|    -   0|    -    0
+src/udev/udev-node.c                           | 0.0%   266| 0.0%   8|    -    0
+src/udev/udev-rules.c                          | 0.0%  1381| 0.0%  33|    -    0
+src/udev/udev-rules.h                          | 0.0%     1|    -   0|    -    0
+src/udev/udev-watch.c                          | 0.0%    92| 0.0%   5|    -    0
+src/udev/udevadm-control.c                     | 0.0%    89| 0.0%   1|    -    0
+src/udev/udevadm-hwdb.c                        | 0.0%    39| 0.0%   2|    -    0
+src/udev/udevadm-info.c                        | 0.0%   249| 0.0%   9|    -    0
+src/udev/udevadm-monitor.c                     | 0.0%   130| 0.0%   4|    -    0
+src/udev/udevadm-test-builtin.c                | 0.0%    43| 0.0%   3|    -    0
+src/udev/udevadm-test.c                        | 0.0%    68| 0.0%   2|    -    0
+src/udev/udevadm-trigger.c                     | 0.0%   209| 0.0%   4|    -    0
+src/udev/udevadm-util.c                        | 0.0%    23| 0.0%   1|    -    0
+src/udev/udevadm.c                             |44.4%    45|50.0%   6|    -    0
+src/udev/udevadm.h                             | 0.0%     3|    -   0|    -    0
+src/udev/udevd.c                               | 0.0%   955| 0.0%  41|    -    0
+byteswap.h                                     | 0.0%     6|    -   0|    -    0
+mqueue2.h                                      | 0.0%     5|    -   0|    -    0
+poll2.h                                        |50.0%     4|    -   0|    -    0
+stdio.h                                        | 0.0%     8|    -   0|    -    0
+stdlib-bsearch.h                               | 0.0%    13|    -   0|    -    0
+stdlib.h                                       | 0.0%     2|    -   0|    -    0
+unistd.h                                       |20.0%    10|    -   0|    -    0
+cpuid.h                                        | 0.0%    11|    -   0|    -    0

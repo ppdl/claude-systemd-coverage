@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - combined.info - src/basic/env-util.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">src/basic</a> - env-util.h<span style="font-size: 80%;"> (source / <a href="env-util.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">combined.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-04-24 09:00:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* SPDX-License-Identifier: LGPL-2.1+ */</a>
+<a name="2"><span class="lineNum">       2 </span>            : #pragma once</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #include &lt;stdbool.h&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            : #include &lt;stddef.h&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;stdio.h&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;unistd.h&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;macro.h&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;string.h&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : </a>
+<a name="12"><span class="lineNum">      12 </span><span class="lineCov">        466 : static inline size_t sc_arg_max(void) {</span></a>
+<a name="13"><span class="lineNum">      13 </span><span class="lineCov">        466 :         long l = sysconf(_SC_ARG_MAX);</span></a>
+<a name="14"><span class="lineNum">      14 </span><span class="lineCov">        466 :         assert(l &gt; 0);</span></a>
+<a name="15"><span class="lineNum">      15 </span><span class="lineCov">        466 :         return (size_t) l;</span></a>
+<a name="16"><span class="lineNum">      16 </span>            : }</a>
+<a name="17"><span class="lineNum">      17 </span>            : </a>
+<a name="18"><span class="lineNum">      18 </span>            : bool env_name_is_valid(const char *e);</a>
+<a name="19"><span class="lineNum">      19 </span>            : bool env_value_is_valid(const char *e);</a>
+<a name="20"><span class="lineNum">      20 </span>            : bool env_assignment_is_valid(const char *e);</a>
+<a name="21"><span class="lineNum">      21 </span>            : </a>
+<a name="22"><span class="lineNum">      22 </span>            : enum {</a>
+<a name="23"><span class="lineNum">      23 </span>            :         REPLACE_ENV_USE_ENVIRONMENT = 1 &lt;&lt; 0,</a>
+<a name="24"><span class="lineNum">      24 </span>            :         REPLACE_ENV_ALLOW_BRACELESS = 1 &lt;&lt; 1,</a>
+<a name="25"><span class="lineNum">      25 </span>            :         REPLACE_ENV_ALLOW_EXTENDED  = 1 &lt;&lt; 2,</a>
+<a name="26"><span class="lineNum">      26 </span>            : };</a>
+<a name="27"><span class="lineNum">      27 </span>            : </a>
+<a name="28"><span class="lineNum">      28 </span>            : char *replace_env_n(const char *format, size_t n, char **env, unsigned flags);</a>
+<a name="29"><span class="lineNum">      29 </span>            : char **replace_env_argv(char **argv, char **env);</a>
+<a name="30"><span class="lineNum">      30 </span>            : </a>
+<a name="31"><span class="lineNum">      31 </span><span class="lineNoCov">          0 : static inline char *replace_env(const char *format, char **env, unsigned flags) {</span></a>
+<a name="32"><span class="lineNum">      32 </span><span class="lineNoCov">          0 :         return replace_env_n(format, strlen(format), env, flags);</span></a>
+<a name="33"><span class="lineNum">      33 </span>            : }</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : bool strv_env_is_valid(char **e);</a>
+<a name="36"><span class="lineNum">      36 </span>            : #define strv_env_clean(l) strv_env_clean_with_callback(l, NULL, NULL)</a>
+<a name="37"><span class="lineNum">      37 </span>            : char **strv_env_clean_with_callback(char **l, void (*invalid_callback)(const char *p, void *userdata), void *userdata);</a>
+<a name="38"><span class="lineNum">      38 </span>            : </a>
+<a name="39"><span class="lineNum">      39 </span>            : bool strv_env_name_is_valid(char **l);</a>
+<a name="40"><span class="lineNum">      40 </span>            : bool strv_env_name_or_assignment_is_valid(char **l);</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : char **strv_env_merge(size_t n_lists, ...);</a>
+<a name="43"><span class="lineNum">      43 </span>            : char **strv_env_delete(char **x, size_t n_lists, ...); /* New copy */</a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            : char **strv_env_set(char **x, const char *p); /* New copy ... */</a>
+<a name="46"><span class="lineNum">      46 </span>            : char **strv_env_unset(char **l, const char *p); /* In place ... */</a>
+<a name="47"><span class="lineNum">      47 </span>            : char **strv_env_unset_many(char **l, ...) _sentinel_;</a>
+<a name="48"><span class="lineNum">      48 </span>            : int strv_env_replace(char ***l, char *p); /* In place ... */</a>
+<a name="49"><span class="lineNum">      49 </span>            : </a>
+<a name="50"><span class="lineNum">      50 </span>            : char *strv_env_get_n(char **l, const char *name, size_t k, unsigned flags) _pure_;</a>
+<a name="51"><span class="lineNum">      51 </span>            : char *strv_env_get(char **x, const char *n) _pure_;</a>
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<a name="53"><span class="lineNum">      53 </span>            : int getenv_bool(const char *p);</a>
+<a name="54"><span class="lineNum">      54 </span>            : int getenv_bool_secure(const char *p);</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+src/core/bus-policy.c                          | 0.0%    84| 0.0%   5|    -    0
+src/core/busname.h                             | 0.0%     1|    -   0|    -    0
+src/core/cgroup.h                              | 0.0%     2|    -   0|    -    0
+src/core/chown-recursive.c                     | 0.0%    63| 0.0%   3|    -    0
+src/core/dbus-automount.c                      | 0.0%    20| 0.0%   3|    -    0
+src/core/dbus-busname.c                        | 0.0%     1| 0.0%   1|    -    0
+src/core/dbus-job.c                            |50.7%   152|60.0%  15|    -    0
+src/core/dbus-mount.c                          | 0.0%    57| 0.0%  10|    -    0
+src/core/dbus-scope.c                          |42.0%   119|50.0%   8|    -    0
+src/core/dbus-slice.c                          | 0.0%    10| 0.0%   2|    -    0
+src/core/dbus-swap.c                           | 0.0%    22| 0.0%   5|    -    0
+src/core/dbus-timer.c                          | 0.0%   168| 0.0%   8|    -    0
+src/core/dbus-util.c                           |20.0%    45|12.5%   8|    -    0
+src/core/dbus-util.h                           | 0.0%     4|    -   0|    -    0
+src/core/dynamic-user.c                        | 5.0%   400|20.0%  25|    -    0
+src/core/emergency-action.c                    | 6.7%    75|20.0%   5|    -    0
+src/core/execute.h                             | 0.0%     3| 0.0%   1|    -    0
+src/core/kill.c                                |52.9%    17|50.0%   6|    -    0
+src/core/killall.c                             | 0.0%   127| 0.0%   5|    -    0
+src/core/manager.h                             |25.0%     4| 0.0%   1|    -    0
+src/core/scope.c                               |42.1%   299|50.0%  30|    -    0
+src/core/socket.h                              |50.0%     2|    -   0|    -    0
+src/core/timer.c                               | 0.0%   451| 0.0%  33|    -    0
+src/core/timer.h                               | 0.0%     1|    -   0|    -    0
+src/core/unit.h                                |77.3%    22|50.0%   2|    -    0
