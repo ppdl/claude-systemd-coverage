@@ -450,17 +450,40 @@ ${SDB} pull "/run/gcov/logind/_build" "${GCOV_HOST}/logind/" 2>/dev/null
 ## Step 5: lcov 도구 준비
 
 GBS 빌드루트의 GCC 14 gcov를 사용해야 한다. 호스트 gcov와 버전이 달라서
-직접 실행할 수 없으므로 dynamic linker를 통해 실행하는 래퍼 스크립트를 만든다.
+직접 실행할 수 없으므로 래퍼 스크립트를 통해 실행한다.
+
+빌드루트의 gcov 바이너리 아키텍처에 따라 실행 방식이 달라진다:
+- **x86_64** (에뮬레이터 빌드): buildroot의 `ld-linux-x86-64.so.2`로 실행
+- **ARM** (실제 디바이스 빌드): `qemu-arm`으로 실행 (`apt-get install qemu-user` 필요)
 
 ```bash
-# gcov 래퍼 (환경 전제조건에서 결정된 BUILDROOT 변수 사용)
-cat > /tmp/gcov-wrapper.sh << EOF
+# gcov 바이너리 아키텍처 감지
+GCOV_BIN="${BUILDROOT}/usr/bin/gcov"
+GCOV_ARCH=$(file "${GCOV_BIN}" 2>/dev/null | grep -oE 'ARM|x86-64' | head -1)
+echo "gcov arch: ${GCOV_ARCH}"
+
+if [ "${GCOV_ARCH}" = "x86-64" ]; then
+    # x86_64: buildroot에서 ld-linux-x86-64.so.2 검색 후 실행
+    LDSO=$(find "${BUILDROOT}" -name "ld-linux-x86-64.so.2" 2>/dev/null | head -1)
+    LIBPATH=""
+    for d in usr/lib64 lib64 usr/lib lib; do
+        [ -d "${BUILDROOT}/${d}" ] && LIBPATH="${LIBPATH}${BUILDROOT}/${d}:"
+    done
+    cat > /tmp/gcov-wrapper.sh << EOF
 #!/bin/bash
-exec "${BUILDROOT}/lib64/ld-linux-x86-64.so.2" \\
-    --library-path "${BUILDROOT}/usr/lib64:${BUILDROOT}/lib64" \\
-    "${BUILDROOT}/usr/bin/gcov" "\$@"
+exec "${LDSO}" --library-path "${LIBPATH%:}" "${GCOV_BIN}" "\$@"
 EOF
+elif [ "${GCOV_ARCH}" = "ARM" ]; then
+    # ARM: qemu-arm으로 실행
+    cat > /tmp/gcov-wrapper.sh << EOF
+#!/bin/bash
+exec qemu-arm -L "${BUILDROOT}" "${GCOV_BIN}" "\$@"
+EOF
+fi
 chmod +x /tmp/gcov-wrapper.sh
+
+# 래퍼 동작 확인 — "gcov (GCC) 14.x.x" 가 출력되어야 한다
+/tmp/gcov-wrapper.sh --version
 
 # lcov 설치 (sudo 없이 deb 직접 추출)
 cd /tmp && apt-get download lcov

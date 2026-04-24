@@ -17,6 +17,7 @@
 8. [/tmp 도구 세션 간 초기화 (lcov, gcov 래퍼 사라짐)](#8-tmp-도구-세션-간-초기화-lcov-gcov-래퍼-사라짐)
 9. [spec 파일 trailing backslash로 meson build 실패](#9-spec-파일-trailing-backslash로-meson-build-실패)
 10. [멀티 프로세스 gcda 파일 충돌 (덮어쓰기)](#10-멀티-프로세스-gcda-파일-충돌-덮어쓰기)
+11. [gcov 버전 감지 실패 및 "Overlong record" — armv7l 실제 디바이스 빌드](#11-gcov-버전-감지-실패-및-overlong-record--armv7l-실제-디바이스-빌드)
 
 ---
 
@@ -327,4 +328,74 @@ perl "${LCOV}" \
     --add-tracefile "${OUT}/journald-fixed.info" \
     ...
     --output-file "${OUT}/combined.info"
+```
+
+---
+
+## 11. gcov 버전 감지 실패 및 "Overlong record" — armv7l 실제 디바이스 빌드
+
+**증상:**
+```
+geninfo: WARNING: cannot determine gcov version - assuming 4.2.0
+Found gcov version: 4.2.0
+...
+geninfo: WARNING: <path>.gcno: Overlong record at end of file!
+```
+
+**원인:**
+gcov 래퍼 스크립트가 x86_64 에뮬레이터 기준으로 하드코딩되어 있어 armv7l 빌드루트에서
+gcov를 실행하지 못한다.
+
+```bash
+# 기존 래퍼 — x86_64 전용
+exec "${BUILDROOT}/lib64/ld-linux-x86-64.so.2" \
+    --library-path "${BUILDROOT}/usr/lib64:${BUILDROOT}/lib64" \
+    "${BUILDROOT}/usr/bin/gcov" "$@"
+```
+
+`armv7l` 빌드루트의 경우:
+- gcov 바이너리가 ARM 바이너리일 수 있어 x86_64 ld-linux로 실행 불가
+- 라이브러리 경로가 `lib64` 가 아닌 `lib`일 수 있음
+
+래퍼 실행 실패 → geninfo가 gcov 버전을 판별 못함 → 4.2.0으로 가정 → GCC 14가 생성한
+gcno 파일을 4.2.0 포맷으로 파싱 시도 → "Overlong record" 오류
+
+**해결책:**
+gcov 바이너리의 아키텍처를 `file` 명령으로 자동 감지하여 실행 방식을 분기한다.
+
+```bash
+GCOV_BIN="${BUILDROOT}/usr/bin/gcov"
+GCOV_ARCH=$(file "${GCOV_BIN}" 2>/dev/null | grep -oE 'ARM|x86-64' | head -1)
+
+if [ "${GCOV_ARCH}" = "x86-64" ]; then
+    # x86_64 gcov (에뮬레이터 빌드): buildroot에서 ld-linux를 검색하여 실행
+    LDSO=$(find "${BUILDROOT}" -name "ld-linux-x86-64.so.2" 2>/dev/null | head -1)
+    LIBPATH=""
+    for d in usr/lib64 lib64 usr/lib lib; do
+        [ -d "${BUILDROOT}/${d}" ] && LIBPATH="${LIBPATH}${BUILDROOT}/${d}:"
+    done
+    cat > /tmp/gcov-wrapper.sh << EOF
+#!/bin/bash
+exec "${LDSO}" --library-path "${LIBPATH%:}" "${GCOV_BIN}" "\$@"
+EOF
+elif [ "${GCOV_ARCH}" = "ARM" ]; then
+    # ARM gcov (실제 디바이스 빌드): qemu-arm으로 실행
+    # apt-get install qemu-user 로 설치 필요
+    cat > /tmp/gcov-wrapper.sh << EOF
+#!/bin/bash
+exec qemu-arm -L "${BUILDROOT}" "${GCOV_BIN}" "\$@"
+EOF
+fi
+chmod +x /tmp/gcov-wrapper.sh
+```
+
+ARM gcov의 경우 `qemu-arm`이 설치되어 있어야 한다:
+```bash
+apt-get install qemu-user
+```
+
+**검증:**
+```bash
+/tmp/gcov-wrapper.sh --version
+# 출력에 "gcov (GCC) 14.x.x" 가 포함되어야 한다 (4.2.0 이면 실패)
 ```
