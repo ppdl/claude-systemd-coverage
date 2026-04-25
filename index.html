@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>파일 브라우저</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; max-width: 1400px; margin: 40px auto; padding: 0 24px; color: #24292f; }
+    .file-list { border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden; }
+    .file-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+                 border-bottom: 1px solid #d0d7de; background: #fff; cursor: pointer; }
+    .file-item:last-child { border-bottom: none; }
+    .file-item:hover { background: #f6f8fa; }
+    .file-item.up .name { color: #57606a; }
+    .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+    .name { font-size: 14px; color: #0969da; flex: 1; }
+    #file-view { display: none; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+                border: 1px solid #d0d7de; border-radius: 6px; font-size: 14px;
+                cursor: pointer; background: #f6f8fa; margin-bottom: 20px; color: #24292f; }
+    .back-btn:hover { background: #eaeef2; }
+    .breadcrumb { font-size: 13px; color: #57606a; margin-bottom: 14px; }
+    .breadcrumb span { color: #0969da; cursor: pointer; }
+    .breadcrumb span:hover { text-decoration: underline; }
+    .markdown-body { padding: 32px 48px; border: 1px solid #d0d7de; border-radius: 8px;
+                     background: #fff; max-width: 100%; }
+    .loading { padding: 40px; text-align: center; color: #57606a; font-size: 14px; }
+    .error { padding: 20px; color: #cf222e; font-size: 14px; background: #fff0f0;
+             border: 1px solid #ffcdd2; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+<div id="browser">
+  <div class="breadcrumb" id="breadcrumb"></div>
+  <div id="file-list-wrap"></div>
+</div>
+
+<div id="file-view">
+  <button class="back-btn" id="back-btn">← 목록으로</button>
+  <div class="markdown-body" id="md-content"></div>
+</div>
+
+<script>
+  const OWNER  = 'ppdl';
+  const REPO   = 'claude-systemd-coverage';
+  const BRANCH = 'main';
+
+  function rawUrl(filePath) {
+    return `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${filePath}`;
+  }
+
+  function pagesUrl(filePath) {
+    return `https://${OWNER}.github.io/${REPO}/${filePath}`;
+  }
+
+  function setHash(path) {
+    const hash = path ? `#${encodeURIComponent(path)}` : location.pathname;
+    history.pushState(null, '', hash);
+  }
+
+  function renderBreadcrumb(path) {
+    const parts = path ? path.split('/') : [];
+    let html = `<span onclick="loadDir('')">📂 ${REPO}</span>`;
+    let accumulated = '';
+    parts.forEach((p, i) => {
+      accumulated += (i > 0 ? '/' : '') + p;
+      const cap = accumulated;
+      html += ` / <span onclick="loadDir('${cap}')">${p}</span>`;
+    });
+    document.getElementById('breadcrumb').innerHTML = html;
+  }
+
+  function showBrowser() {
+    document.getElementById('browser').style.display = 'block';
+    document.getElementById('file-view').style.display = 'none';
+  }
+
+  function showFileView() {
+    document.getElementById('browser').style.display = 'none';
+    document.getElementById('file-view').style.display = 'block';
+  }
+
+  function setBackBtn(filePath) {
+    const parentPath = filePath.includes('/')
+      ? filePath.substring(0, filePath.lastIndexOf('/'))
+      : '';
+    document.getElementById('back-btn').onclick = () => loadDir(parentPath);
+  }
+
+  async function loadDir(path = '') {
+    setHash(path);
+    const wrap = document.getElementById('file-list-wrap');
+    wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+    showBrowser();
+    renderBreadcrumb(path);
+
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const items = await res.json();
+
+      items.sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      const list = document.createElement('div');
+      list.className = 'file-list';
+
+      if (path !== '') {
+        const upRow = document.createElement('div');
+        upRow.className = 'file-item up';
+        upRow.innerHTML = '<span class="icon">↩</span><span class="name">.. (상위 폴더)</span>';
+        upRow.onclick = () => {
+          const parent = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : '';
+          loadDir(parent);
+        };
+        list.appendChild(upRow);
+      }
+
+      for (const item of items) {
+        const row = document.createElement('div');
+        row.className = 'file-item';
+        const icon = document.createElement('span');
+        icon.className = 'icon';
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = item.name;
+
+        if (item.type === 'dir') {
+          icon.textContent = '📁';
+          row.onclick = () => loadDir(item.path);
+        } else if (item.name.endsWith('.md')) {
+          icon.textContent = '📄';
+          row.onclick = () => loadMd(item.path);
+        } else if (item.name.endsWith('.html') || item.name.endsWith('.htm')) {
+          icon.textContent = '🌐';
+          row.onclick = () => window.open(pagesUrl(item.path), '_blank');
+        } else {
+          icon.textContent = '📄';
+          row.onclick = () => window.open(rawUrl(item.path), '_blank');
+        }
+
+        row.appendChild(icon);
+        row.appendChild(name);
+        list.appendChild(row);
+      }
+
+      wrap.innerHTML = '';
+      wrap.appendChild(list);
+    } catch (e) {
+      wrap.innerHTML = `<div class="error">⚠️ 불러오기 실패: ${e.message}</div>`;
+    }
+  }
+
+  async function loadMd(filePath) {
+    setHash(filePath);
+    setBackBtn(filePath);
+    showFileView();
+    document.getElementById('md-content').innerHTML = '<div class="loading">렌더링 중...</div>';
+
+    try {
+      const res = await fetch(rawUrl(filePath));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      document.getElementById('md-content').innerHTML = marked.parse(text);
+    } catch (e) {
+      document.getElementById('md-content').innerHTML = `<div class="error">⚠️ 실패: ${e.message}</div>`;
+    }
+  }
+
+  function loadFromHash() {
+    const hash = decodeURIComponent(location.hash.slice(1));
+    if (!hash) {
+      loadDir('');
+    } else if (hash.endsWith('.md')) {
+      loadMd(hash);
+    } else {
+      loadDir(hash);
+    }
+  }
+
+  window.addEventListener('popstate', loadFromHash);
+  loadFromHash();
+</script>
+</body>
+</html>
