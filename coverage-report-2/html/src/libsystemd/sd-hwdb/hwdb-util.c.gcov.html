@@ -1,0 +1,772 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - combined.info - src/libsystemd/sd-hwdb/hwdb-util.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">src/libsystemd/sd-hwdb</a> - hwdb-util.c<span style="font-size: 80%;"> (source / <a href="hwdb-util.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">combined.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">344</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-04-25 18:24:10</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* SPDX-License-Identifier: LGPL-2.1+ */</a>
+<a name="2"><span class="lineNum">       2 </span>            : </a>
+<a name="3"><span class="lineNum">       3 </span>            : #include &lt;ctype.h&gt;</a>
+<a name="4"><span class="lineNum">       4 </span>            : #include &lt;stdio.h&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            : #include &lt;sys/stat.h&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &quot;alloc-util.h&quot;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &quot;conf-files.h&quot;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;fd-util.h&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;fileio.h&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;fs-util.h&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;hwdb-internal.h&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;hwdb-util.h&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;label.h&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;mkdir.h&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;path-util.h&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;sort-util.h&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;strbuf.h&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;string-util.h&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;strv.h&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;tmpfile-util.h&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : </a>
+<a name="23"><span class="lineNum">      23 </span>            : static const char *default_hwdb_bin_dir = &quot;/etc/udev&quot;;</a>
+<a name="24"><span class="lineNum">      24 </span>            : static const char * const conf_file_dirs[] = {</a>
+<a name="25"><span class="lineNum">      25 </span>            :         &quot;/etc/udev/hwdb.d&quot;,</a>
+<a name="26"><span class="lineNum">      26 </span>            :         UDEVLIBEXECDIR &quot;/hwdb.d&quot;,</a>
+<a name="27"><span class="lineNum">      27 </span>            :         NULL</a>
+<a name="28"><span class="lineNum">      28 </span>            : };</a>
+<a name="29"><span class="lineNum">      29 </span>            : </a>
+<a name="30"><span class="lineNum">      30 </span>            : /*</a>
+<a name="31"><span class="lineNum">      31 </span>            :  * Generic udev properties, key-value database based on modalias strings.</a>
+<a name="32"><span class="lineNum">      32 </span>            :  * Uses a Patricia/radix trie to index all matches for efficient lookup.</a>
+<a name="33"><span class="lineNum">      33 </span>            :  */</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : /* in-memory trie objects */</a>
+<a name="36"><span class="lineNum">      36 </span>            : struct trie {</a>
+<a name="37"><span class="lineNum">      37 </span>            :         struct trie_node *root;</a>
+<a name="38"><span class="lineNum">      38 </span>            :         struct strbuf *strings;</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            :         size_t nodes_count;</a>
+<a name="41"><span class="lineNum">      41 </span>            :         size_t children_count;</a>
+<a name="42"><span class="lineNum">      42 </span>            :         size_t values_count;</a>
+<a name="43"><span class="lineNum">      43 </span>            : };</a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            : struct trie_node {</a>
+<a name="46"><span class="lineNum">      46 </span>            :         /* prefix, common part for all children of this node */</a>
+<a name="47"><span class="lineNum">      47 </span>            :         size_t prefix_off;</a>
+<a name="48"><span class="lineNum">      48 </span>            : </a>
+<a name="49"><span class="lineNum">      49 </span>            :         /* sorted array of pointers to children nodes */</a>
+<a name="50"><span class="lineNum">      50 </span>            :         struct trie_child_entry *children;</a>
+<a name="51"><span class="lineNum">      51 </span>            :         uint8_t children_count;</a>
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<a name="53"><span class="lineNum">      53 </span>            :         /* sorted array of key-value pairs */</a>
+<a name="54"><span class="lineNum">      54 </span>            :         struct trie_value_entry *values;</a>
+<a name="55"><span class="lineNum">      55 </span>            :         size_t values_count;</a>
+<a name="56"><span class="lineNum">      56 </span>            : };</a>
+<a name="57"><span class="lineNum">      57 </span>            : </a>
+<a name="58"><span class="lineNum">      58 </span>            : /* children array item with char (0-255) index */</a>
+<a name="59"><span class="lineNum">      59 </span>            : struct trie_child_entry {</a>
+<a name="60"><span class="lineNum">      60 </span>            :         uint8_t c;</a>
+<a name="61"><span class="lineNum">      61 </span>            :         struct trie_node *child;</a>
+<a name="62"><span class="lineNum">      62 </span>            : };</a>
+<a name="63"><span class="lineNum">      63 </span>            : </a>
+<a name="64"><span class="lineNum">      64 </span>            : /* value array item with key-value pairs */</a>
+<a name="65"><span class="lineNum">      65 </span>            : struct trie_value_entry {</a>
+<a name="66"><span class="lineNum">      66 </span>            :         size_t key_off;</a>
+<a name="67"><span class="lineNum">      67 </span>            :         size_t value_off;</a>
+<a name="68"><span class="lineNum">      68 </span>            :         size_t filename_off;</a>
+<a name="69"><span class="lineNum">      69 </span>            :         uint32_t line_number;</a>
+<a name="70"><span class="lineNum">      70 </span>            :         uint16_t file_priority;</a>
+<a name="71"><span class="lineNum">      71 </span>            : };</a>
+<a name="72"><span class="lineNum">      72 </span>            : </a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineNoCov">          0 : static int trie_children_cmp(const struct trie_child_entry *a, const struct trie_child_entry *b) {</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineNoCov">          0 :         return CMP(a-&gt;c, b-&gt;c);</span></a>
+<a name="75"><span class="lineNum">      75 </span>            : }</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 : static int node_add_child(struct trie *trie, struct trie_node *node, struct trie_node *node_child, uint8_t c) {</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineNoCov">          0 :         struct trie_child_entry *child;</span></a>
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<a name="80"><span class="lineNum">      80 </span>            :         /* extend array, add new entry, sort for bisection */</a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :         child = reallocarray(node-&gt;children, node-&gt;children_count + 1, sizeof(struct trie_child_entry));</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :         if (!child)</span></a>
+<a name="83"><span class="lineNum">      83 </span>            :                 return -ENOMEM;</a>
+<a name="84"><span class="lineNum">      84 </span>            : </a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineNoCov">          0 :         node-&gt;children = child;</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineNoCov">          0 :         trie-&gt;children_count++;</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineNoCov">          0 :         node-&gt;children[node-&gt;children_count].c = c;</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineNoCov">          0 :         node-&gt;children[node-&gt;children_count].child = node_child;</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineNoCov">          0 :         node-&gt;children_count++;</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineNoCov">          0 :         typesafe_qsort(node-&gt;children, node-&gt;children_count, trie_children_cmp);</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineNoCov">          0 :         trie-&gt;nodes_count++;</span></a>
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineNoCov">          0 :         return 0;</span></a>
+<a name="94"><span class="lineNum">      94 </span>            : }</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineNoCov">          0 : static struct trie_node *node_lookup(const struct trie_node *node, uint8_t c) {</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineNoCov">          0 :         struct trie_child_entry *child;</span></a>
+<a name="98"><span class="lineNum">      98 </span><span class="lineNoCov">          0 :         struct trie_child_entry search;</span></a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :         search.c = c;</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :         child = typesafe_bsearch(&amp;search, node-&gt;children, node-&gt;children_count, trie_children_cmp);</span></a>
+<a name="102"><span class="lineNum">     102 </span><span class="lineNoCov">          0 :         if (child)</span></a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineNoCov">          0 :                 return child-&gt;child;</span></a>
+<a name="104"><span class="lineNum">     104 </span>            :         return NULL;</a>
+<a name="105"><span class="lineNum">     105 </span>            : }</a>
+<a name="106"><span class="lineNum">     106 </span>            : </a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineNoCov">          0 : static void trie_node_cleanup(struct trie_node *node) {</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineNoCov">          0 :         size_t i;</span></a>
+<a name="109"><span class="lineNum">     109 </span>            : </a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineNoCov">          0 :         if (!node)</span></a>
+<a name="111"><span class="lineNum">     111 </span>            :                 return;</a>
+<a name="112"><span class="lineNum">     112 </span>            : </a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; node-&gt;children_count; i++)</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 :                 trie_node_cleanup(node-&gt;children[i].child);</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineNoCov">          0 :         free(node-&gt;children);</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineNoCov">          0 :         free(node-&gt;values);</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 :         free(node);</span></a>
+<a name="118"><span class="lineNum">     118 </span>            : }</a>
+<a name="119"><span class="lineNum">     119 </span>            : </a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 : static void trie_free(struct trie *trie) {</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineNoCov">          0 :         if (!trie)</span></a>
+<a name="122"><span class="lineNum">     122 </span>            :                 return;</a>
+<a name="123"><span class="lineNum">     123 </span>            : </a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineNoCov">          0 :         trie_node_cleanup(trie-&gt;root);</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineNoCov">          0 :         strbuf_cleanup(trie-&gt;strings);</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineNoCov">          0 :         free(trie);</span></a>
+<a name="127"><span class="lineNum">     127 </span>            : }</a>
+<a name="128"><span class="lineNum">     128 </span>            : </a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineNoCov">          0 : DEFINE_TRIVIAL_CLEANUP_FUNC(struct trie*, trie_free);</span></a>
+<a name="130"><span class="lineNum">     130 </span>            : </a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 : static int trie_values_cmp(const struct trie_value_entry *a, const struct trie_value_entry *b, struct trie *trie) {</span></a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineNoCov">          0 :         return strcmp(trie-&gt;strings-&gt;buf + a-&gt;key_off,</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :                       trie-&gt;strings-&gt;buf + b-&gt;key_off);</span></a>
+<a name="134"><span class="lineNum">     134 </span>            : }</a>
+<a name="135"><span class="lineNum">     135 </span>            : </a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineNoCov">          0 : static int trie_node_add_value(struct trie *trie, struct trie_node *node,</span></a>
+<a name="137"><span class="lineNum">     137 </span>            :                                const char *key, const char *value,</a>
+<a name="138"><span class="lineNum">     138 </span>            :                                const char *filename, uint16_t file_priority, uint32_t line_number, bool compat) {</a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineNoCov">          0 :         ssize_t k, v, fn = 0;</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineNoCov">          0 :         struct trie_value_entry *val;</span></a>
+<a name="141"><span class="lineNum">     141 </span>            : </a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 :         k = strbuf_add_string(trie-&gt;strings, key, strlen(key));</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :         if (k &lt; 0)</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :                 return k;</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :         v = strbuf_add_string(trie-&gt;strings, value, strlen(value));</span></a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineNoCov">          0 :         if (v &lt; 0)</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineNoCov">          0 :                 return v;</span></a>
+<a name="148"><span class="lineNum">     148 </span>            : </a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :         if (!compat) {</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineNoCov">          0 :                 fn = strbuf_add_string(trie-&gt;strings, filename, strlen(filename));</span></a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineNoCov">          0 :                 if (fn &lt; 0)</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :                         return fn;</span></a>
+<a name="153"><span class="lineNum">     153 </span>            :         }</a>
+<a name="154"><span class="lineNum">     154 </span>            : </a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineNoCov">          0 :         if (node-&gt;values_count) {</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineNoCov">          0 :                 struct trie_value_entry search = {</span></a>
+<a name="157"><span class="lineNum">     157 </span>            :                         .key_off = k,</a>
+<a name="158"><span class="lineNum">     158 </span>            :                         .value_off = v,</a>
+<a name="159"><span class="lineNum">     159 </span>            :                 };</a>
+<a name="160"><span class="lineNum">     160 </span>            : </a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineNoCov">          0 :                 val = typesafe_bsearch_r(&amp;search, node-&gt;values, node-&gt;values_count, trie_values_cmp, trie);</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineNoCov">          0 :                 if (val) {</span></a>
+<a name="163"><span class="lineNum">     163 </span>            :                         /* At this point we have 2 identical properties on the same match-string.</a>
+<a name="164"><span class="lineNum">     164 </span>            :                          * Since we process files in order, we just replace the previous value. */</a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 :                         val-&gt;value_off = v;</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :                         val-&gt;filename_off = fn;</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :                         val-&gt;file_priority = file_priority;</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :                         val-&gt;line_number = line_number;</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineNoCov">          0 :                         return 0;</span></a>
+<a name="170"><span class="lineNum">     170 </span>            :                 }</a>
+<a name="171"><span class="lineNum">     171 </span>            :         }</a>
+<a name="172"><span class="lineNum">     172 </span>            : </a>
+<a name="173"><span class="lineNum">     173 </span>            :         /* extend array, add new entry, sort for bisection */</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :         val = reallocarray(node-&gt;values, node-&gt;values_count + 1, sizeof(struct trie_value_entry));</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :         if (!val)</span></a>
+<a name="176"><span class="lineNum">     176 </span>            :                 return -ENOMEM;</a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :         trie-&gt;values_count++;</span></a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :         node-&gt;values = val;</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :         node-&gt;values[node-&gt;values_count] = (struct trie_value_entry) {</span></a>
+<a name="180"><span class="lineNum">     180 </span>            :                 .key_off = k,</a>
+<a name="181"><span class="lineNum">     181 </span>            :                 .value_off = v,</a>
+<a name="182"><span class="lineNum">     182 </span>            :                 .filename_off = fn,</a>
+<a name="183"><span class="lineNum">     183 </span>            :                 .file_priority = file_priority,</a>
+<a name="184"><span class="lineNum">     184 </span>            :                 .line_number = line_number,</a>
+<a name="185"><span class="lineNum">     185 </span>            :         };</a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineNoCov">          0 :         node-&gt;values_count++;</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineNoCov">          0 :         typesafe_qsort_r(node-&gt;values, node-&gt;values_count, trie_values_cmp, trie);</span></a>
+<a name="188"><span class="lineNum">     188 </span>            :         return 0;</a>
+<a name="189"><span class="lineNum">     189 </span>            : }</a>
+<a name="190"><span class="lineNum">     190 </span>            : </a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 : static int trie_insert(struct trie *trie, struct trie_node *node, const char *search,</span></a>
+<a name="192"><span class="lineNum">     192 </span>            :                        const char *key, const char *value,</a>
+<a name="193"><span class="lineNum">     193 </span>            :                        const char *filename, uint16_t file_priority, uint32_t line_number, bool compat) {</a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :         size_t i = 0;</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineNoCov">          0 :         int r = 0;</span></a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineNoCov">          0 :         for (;;) {</span></a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineNoCov">          0 :                 size_t p;</span></a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineNoCov">          0 :                 uint8_t c;</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :                 struct trie_node *child;</span></a>
+<a name="201"><span class="lineNum">     201 </span>            : </a>
+<a name="202"><span class="lineNum">     202 </span><span class="lineNoCov">          0 :                 for (p = 0; (c = trie-&gt;strings-&gt;buf[node-&gt;prefix_off + p]); p++) {</span></a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineNoCov">          0 :                         _cleanup_free_ struct trie_node *new_child = NULL;</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineNoCov">          0 :                         _cleanup_free_ char *s = NULL;</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :                         ssize_t off;</span></a>
+<a name="206"><span class="lineNum">     206 </span>            : </a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineNoCov">          0 :                         if (c == search[i + p])</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :                                 continue;</span></a>
+<a name="209"><span class="lineNum">     209 </span>            : </a>
+<a name="210"><span class="lineNum">     210 </span>            :                         /* split node */</a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineNoCov">          0 :                         new_child = new(struct trie_node, 1);</span></a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineNoCov">          0 :                         if (!new_child)</span></a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineNoCov">          0 :                                 return -ENOMEM;</span></a>
+<a name="214"><span class="lineNum">     214 </span>            : </a>
+<a name="215"><span class="lineNum">     215 </span>            :                         /* move values from parent to child */</a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :                         *new_child = (struct trie_node) {</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :                                 .prefix_off = node-&gt;prefix_off + p+1,</span></a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineNoCov">          0 :                                 .children = node-&gt;children,</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineNoCov">          0 :                                 .children_count = node-&gt;children_count,</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineNoCov">          0 :                                 .values = node-&gt;values,</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineNoCov">          0 :                                 .values_count = node-&gt;values_count,</span></a>
+<a name="222"><span class="lineNum">     222 </span>            :                         };</a>
+<a name="223"><span class="lineNum">     223 </span>            : </a>
+<a name="224"><span class="lineNum">     224 </span>            :                         /* update parent; use strdup() because the source gets realloc()d */</a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineNoCov">          0 :                         s = strndup(trie-&gt;strings-&gt;buf + node-&gt;prefix_off, p);</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineNoCov">          0 :                         if (!s)</span></a>
+<a name="227"><span class="lineNum">     227 </span>            :                                 return -ENOMEM;</a>
+<a name="228"><span class="lineNum">     228 </span>            : </a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineNoCov">          0 :                         off = strbuf_add_string(trie-&gt;strings, s, p);</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineNoCov">          0 :                         if (off &lt; 0)</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineNoCov">          0 :                                 return off;</span></a>
+<a name="232"><span class="lineNum">     232 </span>            : </a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineNoCov">          0 :                         *node = (struct trie_node) {</span></a>
+<a name="234"><span class="lineNum">     234 </span>            :                                 .prefix_off = off,</a>
+<a name="235"><span class="lineNum">     235 </span>            :                         };</a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineNoCov">          0 :                         r = node_add_child(trie, node, new_child, c);</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 :                         if (r &lt; 0)</span></a>
+<a name="238"><span class="lineNum">     238 </span>            :                                 return r;</a>
+<a name="239"><span class="lineNum">     239 </span>            : </a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineNoCov">          0 :                         new_child = NULL; /* avoid cleanup */</span></a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="242"><span class="lineNum">     242 </span>            :                 }</a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineNoCov">          0 :                 i += p;</span></a>
+<a name="244"><span class="lineNum">     244 </span>            : </a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineNoCov">          0 :                 c = search[i];</span></a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineNoCov">          0 :                 if (c == '\0')</span></a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineNoCov">          0 :                         return trie_node_add_value(trie, node, key, value, filename, file_priority, line_number, compat);</span></a>
+<a name="248"><span class="lineNum">     248 </span>            : </a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 :                 child = node_lookup(node, c);</span></a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineNoCov">          0 :                 if (!child) {</span></a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineNoCov">          0 :                         _cleanup_free_ struct trie_node *new_child = NULL;</span></a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineNoCov">          0 :                         ssize_t off;</span></a>
+<a name="253"><span class="lineNum">     253 </span>            : </a>
+<a name="254"><span class="lineNum">     254 </span>            :                         /* new child */</a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineNoCov">          0 :                         new_child = new(struct trie_node, 1);</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineNoCov">          0 :                         if (!new_child)</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineNoCov">          0 :                                 return -ENOMEM;</span></a>
+<a name="258"><span class="lineNum">     258 </span>            : </a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineNoCov">          0 :                         off = strbuf_add_string(trie-&gt;strings, search + i+1, strlen(search + i+1));</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineNoCov">          0 :                         if (off &lt; 0)</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineNoCov">          0 :                                 return off;</span></a>
+<a name="262"><span class="lineNum">     262 </span>            : </a>
+<a name="263"><span class="lineNum">     263 </span><span class="lineNoCov">          0 :                         *new_child = (struct trie_node) {</span></a>
+<a name="264"><span class="lineNum">     264 </span>            :                                 .prefix_off = off,</a>
+<a name="265"><span class="lineNum">     265 </span>            :                         };</a>
+<a name="266"><span class="lineNum">     266 </span>            : </a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineNoCov">          0 :                         r = node_add_child(trie, node, new_child, c);</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineNoCov">          0 :                         if (r &lt; 0)</span></a>
+<a name="269"><span class="lineNum">     269 </span>            :                                 return r;</a>
+<a name="270"><span class="lineNum">     270 </span>            : </a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :                         child = TAKE_PTR(new_child);</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineNoCov">          0 :                         return trie_node_add_value(trie, child, key, value, filename, file_priority, line_number, compat);</span></a>
+<a name="273"><span class="lineNum">     273 </span>            :                 }</a>
+<a name="274"><span class="lineNum">     274 </span>            : </a>
+<a name="275"><span class="lineNum">     275 </span><span class="lineNoCov">          0 :                 node = child;</span></a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :                 i++;</span></a>
+<a name="277"><span class="lineNum">     277 </span>            :         }</a>
+<a name="278"><span class="lineNum">     278 </span>            : }</a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span>            : struct trie_f {</a>
+<a name="281"><span class="lineNum">     281 </span>            :         FILE *f;</a>
+<a name="282"><span class="lineNum">     282 </span>            :         struct trie *trie;</a>
+<a name="283"><span class="lineNum">     283 </span>            :         uint64_t strings_off;</a>
+<a name="284"><span class="lineNum">     284 </span>            : </a>
+<a name="285"><span class="lineNum">     285 </span>            :         uint64_t nodes_count;</a>
+<a name="286"><span class="lineNum">     286 </span>            :         uint64_t children_count;</a>
+<a name="287"><span class="lineNum">     287 </span>            :         uint64_t values_count;</a>
+<a name="288"><span class="lineNum">     288 </span>            : };</a>
+<a name="289"><span class="lineNum">     289 </span>            : </a>
+<a name="290"><span class="lineNum">     290 </span>            : /* calculate the storage space for the nodes, children arrays, value arrays */</a>
+<a name="291"><span class="lineNum">     291 </span><span class="lineNoCov">          0 : static void trie_store_nodes_size(struct trie_f *trie, struct trie_node *node, bool compat) {</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineNoCov">          0 :         uint64_t i;</span></a>
+<a name="293"><span class="lineNum">     293 </span>            : </a>
+<a name="294"><span class="lineNum">     294 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; node-&gt;children_count; i++)</span></a>
+<a name="295"><span class="lineNum">     295 </span><span class="lineNoCov">          0 :                 trie_store_nodes_size(trie, node-&gt;children[i].child, compat);</span></a>
+<a name="296"><span class="lineNum">     296 </span>            : </a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineNoCov">          0 :         trie-&gt;strings_off += sizeof(struct trie_node_f);</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; node-&gt;children_count; i++)</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineNoCov">          0 :                 trie-&gt;strings_off += sizeof(struct trie_child_entry_f);</span></a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; node-&gt;values_count; i++)</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineNoCov">          0 :                 trie-&gt;strings_off += compat ? sizeof(struct trie_value_entry_f) : sizeof(struct trie_value_entry2_f);</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="303"><span class="lineNum">     303 </span>            : </a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineNoCov">          0 : static int64_t trie_store_nodes(struct trie_f *trie, struct trie_node *node, bool compat) {</span></a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineNoCov">          0 :         uint64_t i;</span></a>
+<a name="306"><span class="lineNum">     306 </span><span class="lineNoCov">          0 :         struct trie_node_f n = {</span></a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineNoCov">          0 :                 .prefix_off = htole64(trie-&gt;strings_off + node-&gt;prefix_off),</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineNoCov">          0 :                 .children_count = node-&gt;children_count,</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineNoCov">          0 :                 .values_count = htole64(node-&gt;values_count),</span></a>
+<a name="310"><span class="lineNum">     310 </span>            :         };</a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineNoCov">          0 :         _cleanup_free_ struct trie_child_entry_f *children = NULL;</span></a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineNoCov">          0 :         int64_t node_off;</span></a>
+<a name="313"><span class="lineNum">     313 </span>            : </a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineNoCov">          0 :         if (node-&gt;children_count) {</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :                 children = new(struct trie_child_entry_f, node-&gt;children_count);</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineNoCov">          0 :                 if (!children)</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineNoCov">          0 :                         return -ENOMEM;</span></a>
+<a name="318"><span class="lineNum">     318 </span>            :         }</a>
+<a name="319"><span class="lineNum">     319 </span>            : </a>
+<a name="320"><span class="lineNum">     320 </span>            :         /* post-order recursion */</a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; node-&gt;children_count; i++) {</span></a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineNoCov">          0 :                 int64_t child_off;</span></a>
+<a name="323"><span class="lineNum">     323 </span>            : </a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :                 child_off = trie_store_nodes(trie, node-&gt;children[i].child, compat);</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineNoCov">          0 :                 if (child_off &lt; 0)</span></a>
+<a name="326"><span class="lineNum">     326 </span>            :                         return child_off;</a>
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineNoCov">          0 :                 children[i] = (struct trie_child_entry_f) {</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineNoCov">          0 :                         .c = node-&gt;children[i].c,</span></a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineNoCov">          0 :                         .child_off = htole64(child_off),</span></a>
+<a name="331"><span class="lineNum">     331 </span>            :                 };</a>
+<a name="332"><span class="lineNum">     332 </span>            :         }</a>
+<a name="333"><span class="lineNum">     333 </span>            : </a>
+<a name="334"><span class="lineNum">     334 </span>            :         /* write node */</a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineNoCov">          0 :         node_off = ftello(trie-&gt;f);</span></a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineNoCov">          0 :         fwrite(&amp;n, sizeof(struct trie_node_f), 1, trie-&gt;f);</span></a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineNoCov">          0 :         trie-&gt;nodes_count++;</span></a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            :         /* append children array */</a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineNoCov">          0 :         if (node-&gt;children_count) {</span></a>
+<a name="341"><span class="lineNum">     341 </span><span class="lineNoCov">          0 :                 fwrite(children, sizeof(struct trie_child_entry_f), node-&gt;children_count, trie-&gt;f);</span></a>
+<a name="342"><span class="lineNum">     342 </span><span class="lineNoCov">          0 :                 trie-&gt;children_count += node-&gt;children_count;</span></a>
+<a name="343"><span class="lineNum">     343 </span>            :         }</a>
+<a name="344"><span class="lineNum">     344 </span>            : </a>
+<a name="345"><span class="lineNum">     345 </span>            :         /* append values array */</a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; node-&gt;values_count; i++) {</span></a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineNoCov">          0 :                 struct trie_value_entry2_f v = {</span></a>
+<a name="348"><span class="lineNum">     348 </span><span class="lineNoCov">          0 :                         .key_off = htole64(trie-&gt;strings_off + node-&gt;values[i].key_off),</span></a>
+<a name="349"><span class="lineNum">     349 </span><span class="lineNoCov">          0 :                         .value_off = htole64(trie-&gt;strings_off + node-&gt;values[i].value_off),</span></a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineNoCov">          0 :                         .filename_off = htole64(trie-&gt;strings_off + node-&gt;values[i].filename_off),</span></a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineNoCov">          0 :                         .line_number = htole32(node-&gt;values[i].line_number),</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineNoCov">          0 :                         .file_priority = htole16(node-&gt;values[i].file_priority),</span></a>
+<a name="353"><span class="lineNum">     353 </span>            :                 };</a>
+<a name="354"><span class="lineNum">     354 </span>            : </a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineNoCov">          0 :                 fwrite(&amp;v, compat ? sizeof(struct trie_value_entry_f) : sizeof(struct trie_value_entry2_f), 1, trie-&gt;f);</span></a>
+<a name="356"><span class="lineNum">     356 </span>            :         }</a>
+<a name="357"><span class="lineNum">     357 </span><span class="lineNoCov">          0 :         trie-&gt;values_count += node-&gt;values_count;</span></a>
+<a name="358"><span class="lineNum">     358 </span>            : </a>
+<a name="359"><span class="lineNum">     359 </span><span class="lineNoCov">          0 :         return node_off;</span></a>
+<a name="360"><span class="lineNum">     360 </span>            : }</a>
+<a name="361"><span class="lineNum">     361 </span>            : </a>
+<a name="362"><span class="lineNum">     362 </span><span class="lineNoCov">          0 : static int trie_store(struct trie *trie, const char *filename, bool compat) {</span></a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineNoCov">          0 :         struct trie_f t = {</span></a>
+<a name="364"><span class="lineNum">     364 </span>            :                 .trie = trie,</a>
+<a name="365"><span class="lineNum">     365 </span>            :         };</a>
+<a name="366"><span class="lineNum">     366 </span><span class="lineNoCov">          0 :         _cleanup_free_ char *filename_tmp = NULL;</span></a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineNoCov">          0 :         int64_t pos;</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineNoCov">          0 :         int64_t root_off;</span></a>
+<a name="369"><span class="lineNum">     369 </span><span class="lineNoCov">          0 :         int64_t size;</span></a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineNoCov">          0 :         struct trie_header_f h = {</span></a>
+<a name="371"><span class="lineNum">     371 </span>            :                 .signature = HWDB_SIG,</a>
+<a name="372"><span class="lineNum">     372 </span>            :                 .tool_version = htole64(PROJECT_VERSION),</a>
+<a name="373"><span class="lineNum">     373 </span>            :                 .header_size = htole64(sizeof(struct trie_header_f)),</a>
+<a name="374"><span class="lineNum">     374 </span>            :                 .node_size = htole64(sizeof(struct trie_node_f)),</a>
+<a name="375"><span class="lineNum">     375 </span>            :                 .child_entry_size = htole64(sizeof(struct trie_child_entry_f)),</a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineNoCov">          0 :                 .value_entry_size = htole64(compat ? sizeof(struct trie_value_entry_f) : sizeof(struct trie_value_entry2_f)),</span></a>
+<a name="377"><span class="lineNum">     377 </span>            :         };</a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineNoCov">          0 :         int r;</span></a>
+<a name="379"><span class="lineNum">     379 </span>            : </a>
+<a name="380"><span class="lineNum">     380 </span>            :         /* calculate size of header, nodes, children entries, value entries */</a>
+<a name="381"><span class="lineNum">     381 </span><span class="lineNoCov">          0 :         t.strings_off = sizeof(struct trie_header_f);</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineNoCov">          0 :         trie_store_nodes_size(&amp;t, trie-&gt;root, compat);</span></a>
+<a name="383"><span class="lineNum">     383 </span>            : </a>
+<a name="384"><span class="lineNum">     384 </span><span class="lineNoCov">          0 :         r = fopen_temporary(filename, &amp;t.f, &amp;filename_tmp);</span></a>
+<a name="385"><span class="lineNum">     385 </span><span class="lineNoCov">          0 :         if (r &lt; 0)</span></a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineNoCov">          0 :                 return r;</span></a>
+<a name="387"><span class="lineNum">     387 </span><span class="lineNoCov">          0 :         fchmod(fileno(t.f), 0444);</span></a>
+<a name="388"><span class="lineNum">     388 </span>            : </a>
+<a name="389"><span class="lineNum">     389 </span>            :         /* write nodes */</a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineNoCov">          0 :         if (fseeko(t.f, sizeof(struct trie_header_f), SEEK_SET) &lt; 0)</span></a>
+<a name="391"><span class="lineNum">     391 </span><span class="lineNoCov">          0 :                 goto error_fclose;</span></a>
+<a name="392"><span class="lineNum">     392 </span>            : </a>
+<a name="393"><span class="lineNum">     393 </span><span class="lineNoCov">          0 :         root_off = trie_store_nodes(&amp;t, trie-&gt;root, compat);</span></a>
+<a name="394"><span class="lineNum">     394 </span><span class="lineNoCov">          0 :         h.nodes_root_off = htole64(root_off);</span></a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineNoCov">          0 :         pos = ftello(t.f);</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineNoCov">          0 :         h.nodes_len = htole64(pos - sizeof(struct trie_header_f));</span></a>
+<a name="397"><span class="lineNum">     397 </span>            : </a>
+<a name="398"><span class="lineNum">     398 </span>            :         /* write string buffer */</a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineNoCov">          0 :         fwrite(trie-&gt;strings-&gt;buf, trie-&gt;strings-&gt;len, 1, t.f);</span></a>
+<a name="400"><span class="lineNum">     400 </span><span class="lineNoCov">          0 :         h.strings_len = htole64(trie-&gt;strings-&gt;len);</span></a>
+<a name="401"><span class="lineNum">     401 </span>            : </a>
+<a name="402"><span class="lineNum">     402 </span>            :         /* write header */</a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineNoCov">          0 :         size = ftello(t.f);</span></a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineNoCov">          0 :         h.file_size = htole64(size);</span></a>
+<a name="405"><span class="lineNum">     405 </span><span class="lineNoCov">          0 :         if (fseeko(t.f, 0, SEEK_SET) &lt; 0)</span></a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineNoCov">          0 :                 goto error_fclose;</span></a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineNoCov">          0 :         fwrite(&amp;h, sizeof(struct trie_header_f), 1, t.f);</span></a>
+<a name="408"><span class="lineNum">     408 </span>            : </a>
+<a name="409"><span class="lineNum">     409 </span><span class="lineNoCov">          0 :         if (ferror(t.f))</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineNoCov">          0 :                 goto error_fclose;</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineNoCov">          0 :         if (fflush(t.f) &lt; 0)</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineNoCov">          0 :                 goto error_fclose;</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineNoCov">          0 :         if (fsync(fileno(t.f)) &lt; 0)</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineNoCov">          0 :                 goto error_fclose;</span></a>
+<a name="415"><span class="lineNum">     415 </span><span class="lineNoCov">          0 :         if (rename(filename_tmp, filename) &lt; 0)</span></a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineNoCov">          0 :                 goto error_fclose;</span></a>
+<a name="417"><span class="lineNum">     417 </span>            : </a>
+<a name="418"><span class="lineNum">     418 </span>            :         /* write succeeded */</a>
+<a name="419"><span class="lineNum">     419 </span><span class="lineNoCov">          0 :         fclose(t.f);</span></a>
+<a name="420"><span class="lineNum">     420 </span>            : </a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineNoCov">          0 :         log_debug(&quot;=== trie on-disk ===&quot;);</span></a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineNoCov">          0 :         log_debug(&quot;size:             %8&quot;PRIi64&quot; bytes&quot;, size);</span></a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineNoCov">          0 :         log_debug(&quot;header:           %8zu bytes&quot;, sizeof(struct trie_header_f));</span></a>
+<a name="424"><span class="lineNum">     424 </span><span class="lineNoCov">          0 :         log_debug(&quot;nodes:            %8&quot;PRIu64&quot; bytes (%8&quot;PRIu64&quot;)&quot;,</span></a>
+<a name="425"><span class="lineNum">     425 </span>            :                   t.nodes_count * sizeof(struct trie_node_f), t.nodes_count);</a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineNoCov">          0 :         log_debug(&quot;child pointers:   %8&quot;PRIu64&quot; bytes (%8&quot;PRIu64&quot;)&quot;,</span></a>
+<a name="427"><span class="lineNum">     427 </span>            :                   t.children_count * sizeof(struct trie_child_entry_f), t.children_count);</a>
+<a name="428"><span class="lineNum">     428 </span><span class="lineNoCov">          0 :         log_debug(&quot;value pointers:   %8&quot;PRIu64&quot; bytes (%8&quot;PRIu64&quot;)&quot;,</span></a>
+<a name="429"><span class="lineNum">     429 </span>            :                   t.values_count * (compat ? sizeof(struct trie_value_entry_f) : sizeof(struct trie_value_entry2_f)), t.values_count);</a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineNoCov">          0 :         log_debug(&quot;string store:     %8zu bytes&quot;, trie-&gt;strings-&gt;len);</span></a>
+<a name="431"><span class="lineNum">     431 </span><span class="lineNoCov">          0 :         log_debug(&quot;strings start:    %8&quot;PRIu64, t.strings_off);</span></a>
+<a name="432"><span class="lineNum">     432 </span>            :         return 0;</a>
+<a name="433"><span class="lineNum">     433 </span>            : </a>
+<a name="434"><span class="lineNum">     434 </span><span class="lineNoCov">          0 :  error_fclose:</span></a>
+<a name="435"><span class="lineNum">     435 </span><span class="lineNoCov">          0 :         r = -errno;</span></a>
+<a name="436"><span class="lineNum">     436 </span><span class="lineNoCov">          0 :         fclose(t.f);</span></a>
+<a name="437"><span class="lineNum">     437 </span><span class="lineNoCov">          0 :         (void) unlink(filename_tmp);</span></a>
+<a name="438"><span class="lineNum">     438 </span><span class="lineNoCov">          0 :         return r;</span></a>
+<a name="439"><span class="lineNum">     439 </span>            : }</a>
+<a name="440"><span class="lineNum">     440 </span>            : </a>
+<a name="441"><span class="lineNum">     441 </span><span class="lineNoCov">          0 : static int insert_data(struct trie *trie, char **match_list, char *line, const char *filename,</span></a>
+<a name="442"><span class="lineNum">     442 </span>            :                        uint16_t file_priority, uint32_t line_number, bool compat) {</a>
+<a name="443"><span class="lineNum">     443 </span><span class="lineNoCov">          0 :         char *value, **entry;</span></a>
+<a name="444"><span class="lineNum">     444 </span>            : </a>
+<a name="445"><span class="lineNum">     445 </span><span class="lineNoCov">          0 :         assert(line[0] == ' ');</span></a>
+<a name="446"><span class="lineNum">     446 </span>            : </a>
+<a name="447"><span class="lineNum">     447 </span><span class="lineNoCov">          0 :         value = strchr(line, '=');</span></a>
+<a name="448"><span class="lineNum">     448 </span><span class="lineNoCov">          0 :         if (!value)</span></a>
+<a name="449"><span class="lineNum">     449 </span><span class="lineNoCov">          0 :                 return log_syntax(NULL, LOG_WARNING, filename, line_number, EINVAL,</span></a>
+<a name="450"><span class="lineNum">     450 </span>            :                                   &quot;Key-value pair expected but got \&quot;%s\&quot;, ignoring&quot;, line);</a>
+<a name="451"><span class="lineNum">     451 </span>            : </a>
+<a name="452"><span class="lineNum">     452 </span><span class="lineNoCov">          0 :         value[0] = '\0';</span></a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineNoCov">          0 :         value++;</span></a>
+<a name="454"><span class="lineNum">     454 </span>            : </a>
+<a name="455"><span class="lineNum">     455 </span>            :         /* Replace multiple leading spaces by a single space */</a>
+<a name="456"><span class="lineNum">     456 </span><span class="lineNoCov">          0 :         while (isblank(line[0]) &amp;&amp; isblank(line[1]))</span></a>
+<a name="457"><span class="lineNum">     457 </span><span class="lineNoCov">          0 :                 line++;</span></a>
+<a name="458"><span class="lineNum">     458 </span>            : </a>
+<a name="459"><span class="lineNum">     459 </span><span class="lineNoCov">          0 :         if (isempty(line + 1) || isempty(value))</span></a>
+<a name="460"><span class="lineNum">     460 </span><span class="lineNoCov">          0 :                 return log_syntax(NULL, LOG_WARNING, filename, line_number, EINVAL,</span></a>
+<a name="461"><span class="lineNum">     461 </span>            :                                   &quot;Empty %s in \&quot;%s=%s\&quot;, ignoring&quot;,</a>
+<a name="462"><span class="lineNum">     462 </span>            :                                   isempty(line + 1) ? &quot;key&quot; : &quot;value&quot;,</a>
+<a name="463"><span class="lineNum">     463 </span>            :                                   line, value);</a>
+<a name="464"><span class="lineNum">     464 </span>            : </a>
+<a name="465"><span class="lineNum">     465 </span><span class="lineNoCov">          0 :         STRV_FOREACH(entry, match_list)</span></a>
+<a name="466"><span class="lineNum">     466 </span><span class="lineNoCov">          0 :                 trie_insert(trie, trie-&gt;root, *entry, line, value, filename, file_priority, line_number, compat);</span></a>
+<a name="467"><span class="lineNum">     467 </span>            : </a>
+<a name="468"><span class="lineNum">     468 </span>            :         return 0;</a>
+<a name="469"><span class="lineNum">     469 </span>            : }</a>
+<a name="470"><span class="lineNum">     470 </span>            : </a>
+<a name="471"><span class="lineNum">     471 </span><span class="lineNoCov">          0 : static int import_file(struct trie *trie, const char *filename, uint16_t file_priority, bool compat) {</span></a>
+<a name="472"><span class="lineNum">     472 </span><span class="lineNoCov">          0 :         enum {</span></a>
+<a name="473"><span class="lineNum">     473 </span>            :                 HW_NONE,</a>
+<a name="474"><span class="lineNum">     474 </span>            :                 HW_MATCH,</a>
+<a name="475"><span class="lineNum">     475 </span>            :                 HW_DATA,</a>
+<a name="476"><span class="lineNum">     476 </span><span class="lineNoCov">          0 :         } state = HW_NONE;</span></a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineNoCov">          0 :         _cleanup_fclose_ FILE *f = NULL;</span></a>
+<a name="478"><span class="lineNum">     478 </span><span class="lineNoCov">          0 :         _cleanup_strv_free_ char **match_list = NULL;</span></a>
+<a name="479"><span class="lineNum">     479 </span><span class="lineNoCov">          0 :         uint32_t line_number = 0;</span></a>
+<a name="480"><span class="lineNum">     480 </span><span class="lineNoCov">          0 :         char *match = NULL;</span></a>
+<a name="481"><span class="lineNum">     481 </span><span class="lineNoCov">          0 :         int r = 0, err;</span></a>
+<a name="482"><span class="lineNum">     482 </span>            : </a>
+<a name="483"><span class="lineNum">     483 </span><span class="lineNoCov">          0 :         f = fopen(filename, &quot;re&quot;);</span></a>
+<a name="484"><span class="lineNum">     484 </span><span class="lineNoCov">          0 :         if (!f)</span></a>
+<a name="485"><span class="lineNum">     485 </span><span class="lineNoCov">          0 :                 return -errno;</span></a>
+<a name="486"><span class="lineNum">     486 </span>            : </a>
+<a name="487"><span class="lineNum">     487 </span><span class="lineNoCov">          0 :         for (;;) {</span></a>
+<a name="488"><span class="lineNum">     488 </span><span class="lineNoCov">          0 :                 _cleanup_free_ char *line = NULL;</span></a>
+<a name="489"><span class="lineNum">     489 </span><span class="lineNoCov">          0 :                 size_t len;</span></a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineNoCov">          0 :                 char *pos;</span></a>
+<a name="491"><span class="lineNum">     491 </span>            : </a>
+<a name="492"><span class="lineNum">     492 </span><span class="lineNoCov">          0 :                 r = read_line(f, LONG_LINE_MAX, &amp;line);</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineNoCov">          0 :                 if (r &lt; 0)</span></a>
+<a name="494"><span class="lineNum">     494 </span><span class="lineNoCov">          0 :                         return r;</span></a>
+<a name="495"><span class="lineNum">     495 </span><span class="lineNoCov">          0 :                 if (r == 0)</span></a>
+<a name="496"><span class="lineNum">     496 </span>            :                         break;</a>
+<a name="497"><span class="lineNum">     497 </span>            : </a>
+<a name="498"><span class="lineNum">     498 </span><span class="lineNoCov">          0 :                 ++line_number;</span></a>
+<a name="499"><span class="lineNum">     499 </span>            : </a>
+<a name="500"><span class="lineNum">     500 </span>            :                 /* comment line */</a>
+<a name="501"><span class="lineNum">     501 </span><span class="lineNoCov">          0 :                 if (line[0] == '#')</span></a>
+<a name="502"><span class="lineNum">     502 </span><span class="lineNoCov">          0 :                         continue;</span></a>
+<a name="503"><span class="lineNum">     503 </span>            : </a>
+<a name="504"><span class="lineNum">     504 </span>            :                 /* strip trailing comment */</a>
+<a name="505"><span class="lineNum">     505 </span><span class="lineNoCov">          0 :                 pos = strchr(line, '#');</span></a>
+<a name="506"><span class="lineNum">     506 </span><span class="lineNoCov">          0 :                 if (pos)</span></a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineNoCov">          0 :                         pos[0] = '\0';</span></a>
+<a name="508"><span class="lineNum">     508 </span>            : </a>
+<a name="509"><span class="lineNum">     509 </span>            :                 /* strip trailing whitespace */</a>
+<a name="510"><span class="lineNum">     510 </span><span class="lineNoCov">          0 :                 len = strlen(line);</span></a>
+<a name="511"><span class="lineNum">     511 </span><span class="lineNoCov">          0 :                 while (len &gt; 0 &amp;&amp; isspace(line[len-1]))</span></a>
+<a name="512"><span class="lineNum">     512 </span>            :                         len--;</a>
+<a name="513"><span class="lineNum">     513 </span><span class="lineNoCov">          0 :                 line[len] = '\0';</span></a>
+<a name="514"><span class="lineNum">     514 </span>            : </a>
+<a name="515"><span class="lineNum">     515 </span><span class="lineNoCov">          0 :                 switch (state) {</span></a>
+<a name="516"><span class="lineNum">     516 </span><span class="lineNoCov">          0 :                 case HW_NONE:</span></a>
+<a name="517"><span class="lineNum">     517 </span><span class="lineNoCov">          0 :                         if (len == 0)</span></a>
+<a name="518"><span class="lineNum">     518 </span>            :                                 break;</a>
+<a name="519"><span class="lineNum">     519 </span>            : </a>
+<a name="520"><span class="lineNum">     520 </span><span class="lineNoCov">          0 :                         if (line[0] == ' ') {</span></a>
+<a name="521"><span class="lineNum">     521 </span><span class="lineNoCov">          0 :                                 log_syntax(NULL, LOG_WARNING, filename, line_number, EINVAL,</span></a>
+<a name="522"><span class="lineNum">     522 </span>            :                                            &quot;Match expected but got indented property \&quot;%s\&quot;, ignoring line&quot;, line);</a>
+<a name="523"><span class="lineNum">     523 </span>            :                                 r = -EINVAL;</a>
+<a name="524"><span class="lineNum">     524 </span>            :                                 break;</a>
+<a name="525"><span class="lineNum">     525 </span>            :                         }</a>
+<a name="526"><span class="lineNum">     526 </span>            : </a>
+<a name="527"><span class="lineNum">     527 </span>            :                         /* start of record, first match */</a>
+<a name="528"><span class="lineNum">     528 </span><span class="lineNoCov">          0 :                         state = HW_MATCH;</span></a>
+<a name="529"><span class="lineNum">     529 </span>            : </a>
+<a name="530"><span class="lineNum">     530 </span><span class="lineNoCov">          0 :                         match = strdup(line);</span></a>
+<a name="531"><span class="lineNum">     531 </span><span class="lineNoCov">          0 :                         if (!match)</span></a>
+<a name="532"><span class="lineNum">     532 </span>            :                                 return -ENOMEM;</a>
+<a name="533"><span class="lineNum">     533 </span>            : </a>
+<a name="534"><span class="lineNum">     534 </span><span class="lineNoCov">          0 :                         err = strv_consume(&amp;match_list, match);</span></a>
+<a name="535"><span class="lineNum">     535 </span><span class="lineNoCov">          0 :                         if (err &lt; 0)</span></a>
+<a name="536"><span class="lineNum">     536 </span>            :                                 return err;</a>
+<a name="537"><span class="lineNum">     537 </span>            : </a>
+<a name="538"><span class="lineNum">     538 </span>            :                         break;</a>
+<a name="539"><span class="lineNum">     539 </span>            : </a>
+<a name="540"><span class="lineNum">     540 </span><span class="lineNoCov">          0 :                 case HW_MATCH:</span></a>
+<a name="541"><span class="lineNum">     541 </span><span class="lineNoCov">          0 :                         if (len == 0) {</span></a>
+<a name="542"><span class="lineNum">     542 </span><span class="lineNoCov">          0 :                                 log_syntax(NULL, LOG_WARNING, filename, line_number, EINVAL,</span></a>
+<a name="543"><span class="lineNum">     543 </span>            :                                            &quot;Property expected, ignoring record with no properties&quot;);</a>
+<a name="544"><span class="lineNum">     544 </span><span class="lineNoCov">          0 :                                 r = -EINVAL;</span></a>
+<a name="545"><span class="lineNum">     545 </span><span class="lineNoCov">          0 :                                 state = HW_NONE;</span></a>
+<a name="546"><span class="lineNum">     546 </span><span class="lineNoCov">          0 :                                 strv_clear(match_list);</span></a>
+<a name="547"><span class="lineNum">     547 </span>            :                                 break;</a>
+<a name="548"><span class="lineNum">     548 </span>            :                         }</a>
+<a name="549"><span class="lineNum">     549 </span>            : </a>
+<a name="550"><span class="lineNum">     550 </span><span class="lineNoCov">          0 :                         if (line[0] != ' ') {</span></a>
+<a name="551"><span class="lineNum">     551 </span>            :                                 /* another match */</a>
+<a name="552"><span class="lineNum">     552 </span><span class="lineNoCov">          0 :                                 match = strdup(line);</span></a>
+<a name="553"><span class="lineNum">     553 </span><span class="lineNoCov">          0 :                                 if (!match)</span></a>
+<a name="554"><span class="lineNum">     554 </span>            :                                         return -ENOMEM;</a>
+<a name="555"><span class="lineNum">     555 </span>            : </a>
+<a name="556"><span class="lineNum">     556 </span><span class="lineNoCov">          0 :                                 err = strv_consume(&amp;match_list, match);</span></a>
+<a name="557"><span class="lineNum">     557 </span><span class="lineNoCov">          0 :                                 if (err &lt; 0)</span></a>
+<a name="558"><span class="lineNum">     558 </span>            :                                         return err;</a>
+<a name="559"><span class="lineNum">     559 </span>            : </a>
+<a name="560"><span class="lineNum">     560 </span>            :                                 break;</a>
+<a name="561"><span class="lineNum">     561 </span>            :                         }</a>
+<a name="562"><span class="lineNum">     562 </span>            : </a>
+<a name="563"><span class="lineNum">     563 </span>            :                         /* first data */</a>
+<a name="564"><span class="lineNum">     564 </span><span class="lineNoCov">          0 :                         state = HW_DATA;</span></a>
+<a name="565"><span class="lineNum">     565 </span><span class="lineNoCov">          0 :                         err = insert_data(trie, match_list, line, filename, file_priority, line_number, compat);</span></a>
+<a name="566"><span class="lineNum">     566 </span>            :                         if (err &lt; 0)</a>
+<a name="567"><span class="lineNum">     567 </span><span class="lineNoCov">          0 :                                 r = err;</span></a>
+<a name="568"><span class="lineNum">     568 </span>            :                         break;</a>
+<a name="569"><span class="lineNum">     569 </span>            : </a>
+<a name="570"><span class="lineNum">     570 </span><span class="lineNoCov">          0 :                 case HW_DATA:</span></a>
+<a name="571"><span class="lineNum">     571 </span><span class="lineNoCov">          0 :                         if (len == 0) {</span></a>
+<a name="572"><span class="lineNum">     572 </span>            :                                 /* end of record */</a>
+<a name="573"><span class="lineNum">     573 </span><span class="lineNoCov">          0 :                                 state = HW_NONE;</span></a>
+<a name="574"><span class="lineNum">     574 </span><span class="lineNoCov">          0 :                                 strv_clear(match_list);</span></a>
+<a name="575"><span class="lineNum">     575 </span>            :                                 break;</a>
+<a name="576"><span class="lineNum">     576 </span>            :                         }</a>
+<a name="577"><span class="lineNum">     577 </span>            : </a>
+<a name="578"><span class="lineNum">     578 </span><span class="lineNoCov">          0 :                         if (line[0] != ' ') {</span></a>
+<a name="579"><span class="lineNum">     579 </span><span class="lineNoCov">          0 :                                 log_syntax(NULL, LOG_WARNING, filename, line_number, EINVAL,</span></a>
+<a name="580"><span class="lineNum">     580 </span>            :                                            &quot;Property or empty line expected, got \&quot;%s\&quot;, ignoring record&quot;, line);</a>
+<a name="581"><span class="lineNum">     581 </span><span class="lineNoCov">          0 :                                 r = -EINVAL;</span></a>
+<a name="582"><span class="lineNum">     582 </span><span class="lineNoCov">          0 :                                 state = HW_NONE;</span></a>
+<a name="583"><span class="lineNum">     583 </span><span class="lineNoCov">          0 :                                 strv_clear(match_list);</span></a>
+<a name="584"><span class="lineNum">     584 </span>            :                                 break;</a>
+<a name="585"><span class="lineNum">     585 </span>            :                         }</a>
+<a name="586"><span class="lineNum">     586 </span>            : </a>
+<a name="587"><span class="lineNum">     587 </span><span class="lineNoCov">          0 :                         err = insert_data(trie, match_list, line, filename, file_priority, line_number, compat);</span></a>
+<a name="588"><span class="lineNum">     588 </span>            :                         if (err &lt; 0)</a>
+<a name="589"><span class="lineNum">     589 </span>            :                                 r = err;</a>
+<a name="590"><span class="lineNum">     590 </span>            :                         break;</a>
+<a name="591"><span class="lineNum">     591 </span><span class="lineNoCov">          0 :                 };</span></a>
+<a name="592"><span class="lineNum">     592 </span>            :         }</a>
+<a name="593"><span class="lineNum">     593 </span>            : </a>
+<a name="594"><span class="lineNum">     594 </span><span class="lineNoCov">          0 :         if (state == HW_MATCH)</span></a>
+<a name="595"><span class="lineNum">     595 </span><span class="lineNoCov">          0 :                 log_syntax(NULL, LOG_WARNING, filename, line_number, EINVAL,</span></a>
+<a name="596"><span class="lineNum">     596 </span>            :                            &quot;Property expected, ignoring record with no properties&quot;);</a>
+<a name="597"><span class="lineNum">     597 </span>            : </a>
+<a name="598"><span class="lineNum">     598 </span>            :         return r;</a>
+<a name="599"><span class="lineNum">     599 </span>            : }</a>
+<a name="600"><span class="lineNum">     600 </span>            : </a>
+<a name="601"><span class="lineNum">     601 </span><span class="lineNoCov">          0 : int hwdb_update(const char *root, const char *hwdb_bin_dir, bool strict, bool compat) {</span></a>
+<a name="602"><span class="lineNum">     602 </span><span class="lineNoCov">          0 :         _cleanup_free_ char *hwdb_bin = NULL;</span></a>
+<a name="603"><span class="lineNum">     603 </span><span class="lineNoCov">          0 :         _cleanup_(trie_freep) struct trie *trie = NULL;</span></a>
+<a name="604"><span class="lineNum">     604 </span><span class="lineNoCov">          0 :         _cleanup_strv_free_ char **files = NULL;</span></a>
+<a name="605"><span class="lineNum">     605 </span><span class="lineNoCov">          0 :         char **f;</span></a>
+<a name="606"><span class="lineNum">     606 </span><span class="lineNoCov">          0 :         uint16_t file_priority = 1;</span></a>
+<a name="607"><span class="lineNum">     607 </span><span class="lineNoCov">          0 :         int r = 0, err;</span></a>
+<a name="608"><span class="lineNum">     608 </span>            : </a>
+<a name="609"><span class="lineNum">     609 </span>            :         /* The argument 'compat' controls the format version of database. If false, then hwdb.bin will be created with</a>
+<a name="610"><span class="lineNum">     610 </span>            :          * additional information such that priority, line number, and filename of database source. If true, then hwdb.bin</a>
+<a name="611"><span class="lineNum">     611 </span>            :          * will be created without the information. systemd-hwdb command should set the argument false, and 'udevadm hwdb'</a>
+<a name="612"><span class="lineNum">     612 </span>            :          * command should set it true. */</a>
+<a name="613"><span class="lineNum">     613 </span>            : </a>
+<a name="614"><span class="lineNum">     614 </span><span class="lineNoCov">          0 :         trie = new0(struct trie, 1);</span></a>
+<a name="615"><span class="lineNum">     615 </span><span class="lineNoCov">          0 :         if (!trie)</span></a>
+<a name="616"><span class="lineNum">     616 </span><span class="lineNoCov">          0 :                 return -ENOMEM;</span></a>
+<a name="617"><span class="lineNum">     617 </span>            : </a>
+<a name="618"><span class="lineNum">     618 </span>            :         /* string store */</a>
+<a name="619"><span class="lineNum">     619 </span><span class="lineNoCov">          0 :         trie-&gt;strings = strbuf_new();</span></a>
+<a name="620"><span class="lineNum">     620 </span><span class="lineNoCov">          0 :         if (!trie-&gt;strings)</span></a>
+<a name="621"><span class="lineNum">     621 </span>            :                 return -ENOMEM;</a>
+<a name="622"><span class="lineNum">     622 </span>            : </a>
+<a name="623"><span class="lineNum">     623 </span>            :         /* index */</a>
+<a name="624"><span class="lineNum">     624 </span><span class="lineNoCov">          0 :         trie-&gt;root = new0(struct trie_node, 1);</span></a>
+<a name="625"><span class="lineNum">     625 </span><span class="lineNoCov">          0 :         if (!trie-&gt;root)</span></a>
+<a name="626"><span class="lineNum">     626 </span>            :                 return -ENOMEM;</a>
+<a name="627"><span class="lineNum">     627 </span>            : </a>
+<a name="628"><span class="lineNum">     628 </span><span class="lineNoCov">          0 :         trie-&gt;nodes_count++;</span></a>
+<a name="629"><span class="lineNum">     629 </span>            : </a>
+<a name="630"><span class="lineNum">     630 </span><span class="lineNoCov">          0 :         err = conf_files_list_strv(&amp;files, &quot;.hwdb&quot;, root, 0, conf_file_dirs);</span></a>
+<a name="631"><span class="lineNum">     631 </span><span class="lineNoCov">          0 :         if (err &lt; 0)</span></a>
+<a name="632"><span class="lineNum">     632 </span><span class="lineNoCov">          0 :                 return log_error_errno(err, &quot;Failed to enumerate hwdb files: %m&quot;);</span></a>
+<a name="633"><span class="lineNum">     633 </span>            : </a>
+<a name="634"><span class="lineNum">     634 </span><span class="lineNoCov">          0 :         STRV_FOREACH(f, files) {</span></a>
+<a name="635"><span class="lineNum">     635 </span><span class="lineNoCov">          0 :                 log_debug(&quot;Reading file \&quot;%s\&quot;&quot;, *f);</span></a>
+<a name="636"><span class="lineNum">     636 </span><span class="lineNoCov">          0 :                 err = import_file(trie, *f, file_priority++, compat);</span></a>
+<a name="637"><span class="lineNum">     637 </span><span class="lineNoCov">          0 :                 if (err &lt; 0 &amp;&amp; strict)</span></a>
+<a name="638"><span class="lineNum">     638 </span><span class="lineNoCov">          0 :                         r = err;</span></a>
+<a name="639"><span class="lineNum">     639 </span>            :         }</a>
+<a name="640"><span class="lineNum">     640 </span>            : </a>
+<a name="641"><span class="lineNum">     641 </span><span class="lineNoCov">          0 :         strbuf_complete(trie-&gt;strings);</span></a>
+<a name="642"><span class="lineNum">     642 </span>            : </a>
+<a name="643"><span class="lineNum">     643 </span><span class="lineNoCov">          0 :         log_debug(&quot;=== trie in-memory ===&quot;);</span></a>
+<a name="644"><span class="lineNum">     644 </span><span class="lineNoCov">          0 :         log_debug(&quot;nodes:            %8zu bytes (%8zu)&quot;,</span></a>
+<a name="645"><span class="lineNum">     645 </span>            :                   trie-&gt;nodes_count * sizeof(struct trie_node), trie-&gt;nodes_count);</a>
+<a name="646"><span class="lineNum">     646 </span><span class="lineNoCov">          0 :         log_debug(&quot;children arrays:  %8zu bytes (%8zu)&quot;,</span></a>
+<a name="647"><span class="lineNum">     647 </span>            :                   trie-&gt;children_count * sizeof(struct trie_child_entry), trie-&gt;children_count);</a>
+<a name="648"><span class="lineNum">     648 </span><span class="lineNoCov">          0 :         log_debug(&quot;values arrays:    %8zu bytes (%8zu)&quot;,</span></a>
+<a name="649"><span class="lineNum">     649 </span>            :                   trie-&gt;values_count * sizeof(struct trie_value_entry), trie-&gt;values_count);</a>
+<a name="650"><span class="lineNum">     650 </span><span class="lineNoCov">          0 :         log_debug(&quot;strings:          %8zu bytes&quot;,</span></a>
+<a name="651"><span class="lineNum">     651 </span>            :                   trie-&gt;strings-&gt;len);</a>
+<a name="652"><span class="lineNum">     652 </span><span class="lineNoCov">          0 :         log_debug(&quot;strings incoming: %8zu bytes (%8zu)&quot;,</span></a>
+<a name="653"><span class="lineNum">     653 </span>            :                   trie-&gt;strings-&gt;in_len, trie-&gt;strings-&gt;in_count);</a>
+<a name="654"><span class="lineNum">     654 </span><span class="lineNoCov">          0 :         log_debug(&quot;strings dedup'ed: %8zu bytes (%8zu)&quot;,</span></a>
+<a name="655"><span class="lineNum">     655 </span>            :                   trie-&gt;strings-&gt;dedup_len, trie-&gt;strings-&gt;dedup_count);</a>
+<a name="656"><span class="lineNum">     656 </span>            : </a>
+<a name="657"><span class="lineNum">     657 </span><span class="lineNoCov">          0 :         hwdb_bin = path_join(root, hwdb_bin_dir ?: default_hwdb_bin_dir, &quot;hwdb.bin&quot;);</span></a>
+<a name="658"><span class="lineNum">     658 </span><span class="lineNoCov">          0 :         if (!hwdb_bin)</span></a>
+<a name="659"><span class="lineNum">     659 </span>            :                 return -ENOMEM;</a>
+<a name="660"><span class="lineNum">     660 </span>            : </a>
+<a name="661"><span class="lineNum">     661 </span><span class="lineNoCov">          0 :         mkdir_parents_label(hwdb_bin, 0755);</span></a>
+<a name="662"><span class="lineNum">     662 </span><span class="lineNoCov">          0 :         err = trie_store(trie, hwdb_bin, compat);</span></a>
+<a name="663"><span class="lineNum">     663 </span><span class="lineNoCov">          0 :         if (err &lt; 0)</span></a>
+<a name="664"><span class="lineNum">     664 </span><span class="lineNoCov">          0 :                 return log_error_errno(err, &quot;Failed to write database %s: %m&quot;, hwdb_bin);</span></a>
+<a name="665"><span class="lineNum">     665 </span>            : </a>
+<a name="666"><span class="lineNum">     666 </span><span class="lineNoCov">          0 :         err = label_fix(hwdb_bin, 0);</span></a>
+<a name="667"><span class="lineNum">     667 </span><span class="lineNoCov">          0 :         if (err &lt; 0)</span></a>
+<a name="668"><span class="lineNum">     668 </span><span class="lineNoCov">          0 :                 return err;</span></a>
+<a name="669"><span class="lineNum">     669 </span>            : </a>
+<a name="670"><span class="lineNum">     670 </span>            :         return r;</a>
+<a name="671"><span class="lineNum">     671 </span>            : }</a>
+<a name="672"><span class="lineNum">     672 </span>            : </a>
+<a name="673"><span class="lineNum">     673 </span><span class="lineNoCov">          0 : int hwdb_query(const char *modalias) {</span></a>
+<a name="674"><span class="lineNum">     674 </span><span class="lineNoCov">          0 :         _cleanup_(sd_hwdb_unrefp) sd_hwdb *hwdb = NULL;</span></a>
+<a name="675"><span class="lineNum">     675 </span><span class="lineNoCov">          0 :         const char *key, *value;</span></a>
+<a name="676"><span class="lineNum">     676 </span><span class="lineNoCov">          0 :         int r;</span></a>
+<a name="677"><span class="lineNum">     677 </span>            : </a>
+<a name="678"><span class="lineNum">     678 </span><span class="lineNoCov">          0 :         assert(modalias);</span></a>
+<a name="679"><span class="lineNum">     679 </span>            : </a>
+<a name="680"><span class="lineNum">     680 </span><span class="lineNoCov">          0 :         r = sd_hwdb_new(&amp;hwdb);</span></a>
+<a name="681"><span class="lineNum">     681 </span><span class="lineNoCov">          0 :         if (r &lt; 0)</span></a>
+<a name="682"><span class="lineNum">     682 </span><span class="lineNoCov">          0 :                 return r;</span></a>
+<a name="683"><span class="lineNum">     683 </span>            : </a>
+<a name="684"><span class="lineNum">     684 </span><span class="lineNoCov">          0 :         SD_HWDB_FOREACH_PROPERTY(hwdb, modalias, key, value)</span></a>
+<a name="685"><span class="lineNum">     685 </span><span class="lineNoCov">          0 :                 printf(&quot;%s=%s\n&quot;, key, value);</span></a>
+<a name="686"><span class="lineNum">     686 </span>            : </a>
+<a name="687"><span class="lineNum">     687 </span>            :         return 0;</a>
+<a name="688"><span class="lineNum">     688 </span>            : }</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

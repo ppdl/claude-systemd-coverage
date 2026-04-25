@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - combined.info - src/core/killall.c</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">src/core</a> - killall.c<span style="font-size: 80%;"> (source / <a href="killall.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">combined.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">127</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-04-25 18:24:10</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* SPDX-License-Identifier: LGPL-2.1+ */</a>
+<a name="2"><span class="lineNum">       2 </span>            : /***</a>
+<a name="3"><span class="lineNum">       3 </span>            :   Copyright © 2010 ProFUSION embedded systems</a>
+<a name="4"><span class="lineNum">       4 </span>            : ***/</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;errno.h&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;signal.h&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &lt;sys/wait.h&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;unistd.h&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : </a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;alloc-util.h&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;def.h&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;dirent-util.h&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;fd-util.h&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;format-util.h&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;killall.h&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;parse-util.h&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;process-util.h&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;set.h&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;string-util.h&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;terminal-util.h&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : #include &quot;util.h&quot;</a>
+<a name="23"><span class="lineNum">      23 </span>            : </a>
+<a name="24"><span class="lineNum">      24 </span><span class="lineNoCov">          0 : static bool ignore_proc(pid_t pid, bool warn_rootfs) {</span></a>
+<a name="25"><span class="lineNum">      25 </span><span class="lineNoCov">          0 :         _cleanup_fclose_ FILE *f = NULL;</span></a>
+<a name="26"><span class="lineNum">      26 </span><span class="lineNoCov">          0 :         const char *p;</span></a>
+<a name="27"><span class="lineNum">      27 </span><span class="lineNoCov">          0 :         char c = 0;</span></a>
+<a name="28"><span class="lineNum">      28 </span><span class="lineNoCov">          0 :         uid_t uid;</span></a>
+<a name="29"><span class="lineNum">      29 </span><span class="lineNoCov">          0 :         int r;</span></a>
+<a name="30"><span class="lineNum">      30 </span>            : </a>
+<a name="31"><span class="lineNum">      31 </span>            :         /* We are PID 1, let's not commit suicide */</a>
+<a name="32"><span class="lineNum">      32 </span><span class="lineNoCov">          0 :         if (pid &lt;= 1)</span></a>
+<a name="33"><span class="lineNum">      33 </span><span class="lineNoCov">          0 :                 return true;</span></a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            :         /* Ignore kernel threads */</a>
+<a name="36"><span class="lineNum">      36 </span><span class="lineNoCov">          0 :         r = is_kernel_thread(pid);</span></a>
+<a name="37"><span class="lineNum">      37 </span><span class="lineNoCov">          0 :         if (r != 0)</span></a>
+<a name="38"><span class="lineNum">      38 </span>            :                 return true; /* also ignore processes where we can't determine this */</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineNoCov">          0 :         r = get_process_uid(pid, &amp;uid);</span></a>
+<a name="41"><span class="lineNum">      41 </span><span class="lineNoCov">          0 :         if (r &lt; 0)</span></a>
+<a name="42"><span class="lineNum">      42 </span>            :                 return true; /* not really, but better safe than sorry */</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span>            :         /* Non-root processes otherwise are always subject to be killed */</a>
+<a name="45"><span class="lineNum">      45 </span><span class="lineNoCov">          0 :         if (uid != 0)</span></a>
+<a name="46"><span class="lineNum">      46 </span>            :                 return false;</a>
+<a name="47"><span class="lineNum">      47 </span>            : </a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineNoCov">          0 :         p = procfs_file_alloca(pid, &quot;cmdline&quot;);</span></a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineNoCov">          0 :         f = fopen(p, &quot;re&quot;);</span></a>
+<a name="50"><span class="lineNum">      50 </span><span class="lineNoCov">          0 :         if (!f)</span></a>
+<a name="51"><span class="lineNum">      51 </span>            :                 return true; /* not really, but has the desired effect */</a>
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<a name="53"><span class="lineNum">      53 </span>            :         /* Try to read the first character of the command line. If the cmdline is empty (which might be the case for</a>
+<a name="54"><span class="lineNum">      54 </span>            :          * kernel threads but potentially also other stuff), this line won't do anything, but we don't care much, as</a>
+<a name="55"><span class="lineNum">      55 </span>            :          * actual kernel threads are already filtered out above. */</a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineNoCov">          0 :         (void) fread(&amp;c, 1, 1, f);</span></a>
+<a name="57"><span class="lineNum">      57 </span>            : </a>
+<a name="58"><span class="lineNum">      58 </span>            :         /* Processes with argv[0][0] = '@' we ignore from the killing spree.</a>
+<a name="59"><span class="lineNum">      59 </span>            :          *</a>
+<a name="60"><span class="lineNum">      60 </span>            :          * http://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons */</a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineNoCov">          0 :         if (c != '@')</span></a>
+<a name="62"><span class="lineNum">      62 </span>            :                 return false;</a>
+<a name="63"><span class="lineNum">      63 </span>            : </a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineNoCov">          0 :         if (warn_rootfs &amp;&amp;</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineNoCov">          0 :             pid_from_same_root_fs(pid) == 0) {</span></a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :                 _cleanup_free_ char *comm = NULL;</span></a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineNoCov">          0 :                 (void) get_process_comm(pid, &amp;comm);</span></a>
+<a name="70"><span class="lineNum">      70 </span>            : </a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineNoCov">          0 :                 log_notice(&quot;Process &quot; PID_FMT &quot; (%s) has been marked to be excluded from killing. It is &quot;</span></a>
+<a name="72"><span class="lineNum">      72 </span>            :                            &quot;running from the root file system, and thus likely to block re-mounting of the &quot;</a>
+<a name="73"><span class="lineNum">      73 </span>            :                            &quot;root file system to read-only. Please consider moving it into an initrd file &quot;</a>
+<a name="74"><span class="lineNum">      74 </span>            :                            &quot;system instead.&quot;, pid, strna(comm));</a>
+<a name="75"><span class="lineNum">      75 </span>            :         }</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span>            :         return true;</a>
+<a name="78"><span class="lineNum">      78 </span>            : }</a>
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineNoCov">          0 : static void log_children_no_yet_killed(Set *pids) {</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :         _cleanup_free_ char *lst_child = NULL;</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :         Iterator i;</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineNoCov">          0 :         void *p;</span></a>
+<a name="84"><span class="lineNum">      84 </span>            : </a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineNoCov">          0 :         SET_FOREACH(p, pids, i) {</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineNoCov">          0 :                 _cleanup_free_ char *s = NULL;</span></a>
+<a name="87"><span class="lineNum">      87 </span>            : </a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineNoCov">          0 :                 if (get_process_comm(PTR_TO_PID(p), &amp;s) &lt; 0)</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineNoCov">          0 :                         (void) asprintf(&amp;s, PID_FMT, PTR_TO_PID(p));</span></a>
+<a name="90"><span class="lineNum">      90 </span>            : </a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineNoCov">          0 :                 if (!strextend(&amp;lst_child, &quot;, &quot;, s, NULL)) {</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineNoCov">          0 :                         log_oom();</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineNoCov">          0 :                         return;</span></a>
+<a name="94"><span class="lineNum">      94 </span>            :                 }</a>
+<a name="95"><span class="lineNum">      95 </span>            :         }</a>
+<a name="96"><span class="lineNum">      96 </span>            : </a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineNoCov">          0 :         if (isempty(lst_child))</span></a>
+<a name="98"><span class="lineNum">      98 </span>            :                 return;</a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :         log_warning(&quot;Waiting for process: %s&quot;, lst_child + 2);</span></a>
+<a name="101"><span class="lineNum">     101 </span>            : }</a>
+<a name="102"><span class="lineNum">     102 </span>            : </a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineNoCov">          0 : static int wait_for_children(Set *pids, sigset_t *mask, usec_t timeout) {</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineNoCov">          0 :         usec_t until, date_log_child, n;</span></a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineNoCov">          0 :         assert(mask);</span></a>
+<a name="107"><span class="lineNum">     107 </span>            : </a>
+<a name="108"><span class="lineNum">     108 </span>            :         /* Return the number of children remaining in the pids set: That correspond to the number</a>
+<a name="109"><span class="lineNum">     109 </span>            :          * of processes still &quot;alive&quot; after the timeout */</a>
+<a name="110"><span class="lineNum">     110 </span>            : </a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :         if (set_isempty(pids))</span></a>
+<a name="112"><span class="lineNum">     112 </span>            :                 return 0;</a>
+<a name="113"><span class="lineNum">     113 </span>            : </a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 :         n = now(CLOCK_MONOTONIC);</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineNoCov">          0 :         until = usec_add(n, timeout);</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineNoCov">          0 :         date_log_child = usec_add(n, 10u * USEC_PER_SEC);</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 :         if (date_log_child &gt; until)</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 :                 date_log_child = usec_add(n, timeout / 2u);</span></a>
+<a name="119"><span class="lineNum">     119 </span>            : </a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :         for (;;) {</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineNoCov">          0 :                 struct timespec ts;</span></a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineNoCov">          0 :                 int k;</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineNoCov">          0 :                 void *p;</span></a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineNoCov">          0 :                 Iterator i;</span></a>
+<a name="125"><span class="lineNum">     125 </span>            : </a>
+<a name="126"><span class="lineNum">     126 </span>            :                 /* First, let the kernel inform us about killed</a>
+<a name="127"><span class="lineNum">     127 </span>            :                  * children. Most processes will probably be our</a>
+<a name="128"><span class="lineNum">     128 </span>            :                  * children, but some are not (might be our</a>
+<a name="129"><span class="lineNum">     129 </span>            :                  * grandchildren instead...). */</a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineNoCov">          0 :                 for (;;) {</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :                         pid_t pid;</span></a>
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :                         pid = waitpid(-1, NULL, WNOHANG);</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :                         if (pid == 0)</span></a>
+<a name="135"><span class="lineNum">     135 </span>            :                                 break;</a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineNoCov">          0 :                         if (pid &lt; 0) {</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineNoCov">          0 :                                 if (errno == ECHILD)</span></a>
+<a name="138"><span class="lineNum">     138 </span>            :                                         break;</a>
+<a name="139"><span class="lineNum">     139 </span>            : </a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineNoCov">          0 :                                 return log_error_errno(errno, &quot;waitpid() failed: %m&quot;);</span></a>
+<a name="141"><span class="lineNum">     141 </span>            :                         }</a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :                         (void) set_remove(pids, PID_TO_PTR(pid));</span></a>
+<a name="144"><span class="lineNum">     144 </span>            :                 }</a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span>            :                 /* Now explicitly check who might be remaining, who</a>
+<a name="147"><span class="lineNum">     147 </span>            :                  * might not be our child. */</a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :                 SET_FOREACH(p, pids, i) {</span></a>
+<a name="149"><span class="lineNum">     149 </span>            : </a>
+<a name="150"><span class="lineNum">     150 </span>            :                         /* kill(pid, 0) sends no signal, but it tells</a>
+<a name="151"><span class="lineNum">     151 </span>            :                          * us whether the process still exists. */</a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :                         if (kill(PTR_TO_PID(p), 0) == 0)</span></a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineNoCov">          0 :                                 continue;</span></a>
+<a name="154"><span class="lineNum">     154 </span>            : </a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineNoCov">          0 :                         if (errno != ESRCH)</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineNoCov">          0 :                                 continue;</span></a>
+<a name="157"><span class="lineNum">     157 </span>            : </a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineNoCov">          0 :                         set_remove(pids, p);</span></a>
+<a name="159"><span class="lineNum">     159 </span>            :                 }</a>
+<a name="160"><span class="lineNum">     160 </span>            : </a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineNoCov">          0 :                 if (set_isempty(pids))</span></a>
+<a name="162"><span class="lineNum">     162 </span>            :                         return 0;</a>
+<a name="163"><span class="lineNum">     163 </span>            : </a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineNoCov">          0 :                 n = now(CLOCK_MONOTONIC);</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 :                 if (date_log_child &gt; 0 &amp;&amp; n &gt;= date_log_child) {</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :                         log_children_no_yet_killed(pids);</span></a>
+<a name="167"><span class="lineNum">     167 </span>            :                         /* Log the children not yet killed only once */</a>
+<a name="168"><span class="lineNum">     168 </span>            :                         date_log_child = 0;</a>
+<a name="169"><span class="lineNum">     169 </span>            :                 }</a>
+<a name="170"><span class="lineNum">     170 </span>            : </a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :                 if (n &gt;= until)</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineNoCov">          0 :                         return set_size(pids);</span></a>
+<a name="173"><span class="lineNum">     173 </span>            : </a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :                 if (date_log_child &gt; 0)</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :                         timespec_store(&amp;ts, MIN(until - n, date_log_child - n));</span></a>
+<a name="176"><span class="lineNum">     176 </span>            :                 else</a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :                         timespec_store(&amp;ts, until - n);</span></a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :                 k = sigtimedwait(mask, NULL, &amp;ts);</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineNoCov">          0 :                 if (k != SIGCHLD) {</span></a>
+<a name="181"><span class="lineNum">     181 </span>            : </a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 :                         if (k &lt; 0 &amp;&amp; errno != EAGAIN)</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineNoCov">          0 :                                 return log_error_errno(errno, &quot;sigtimedwait() failed: %m&quot;);</span></a>
+<a name="184"><span class="lineNum">     184 </span>            : </a>
+<a name="185"><span class="lineNum">     185 </span>            :                         if (k &gt;= 0)</a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineNoCov">          0 :                                 log_warning(&quot;sigtimedwait() returned unexpected signal.&quot;);</span></a>
+<a name="187"><span class="lineNum">     187 </span>            :                 }</a>
+<a name="188"><span class="lineNum">     188 </span>            :         }</a>
+<a name="189"><span class="lineNum">     189 </span>            : }</a>
+<a name="190"><span class="lineNum">     190 </span>            : </a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 : static int killall(int sig, Set *pids, bool send_sighup) {</span></a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineNoCov">          0 :         _cleanup_closedir_ DIR *dir = NULL;</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineNoCov">          0 :         struct dirent *d;</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :         int n_killed = 0;</span></a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            :         /* Send the specified signal to all remaining processes, if not excluded by ignore_proc().</a>
+<a name="197"><span class="lineNum">     197 </span>            :          * Returns the number of processes to which the specified signal was sent */</a>
+<a name="198"><span class="lineNum">     198 </span>            : </a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineNoCov">          0 :         dir = opendir(&quot;/proc&quot;);</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :         if (!dir)</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :                 return log_warning_errno(errno, &quot;opendir(/proc) failed: %m&quot;);</span></a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineNoCov">          0 :         FOREACH_DIRENT_ALL(d, dir, break) {</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineNoCov">          0 :                 pid_t pid;</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :                 int r;</span></a>
+<a name="206"><span class="lineNum">     206 </span>            : </a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineNoCov">          0 :                 if (!IN_SET(d-&gt;d_type, DT_DIR, DT_UNKNOWN))</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :                         continue;</span></a>
+<a name="209"><span class="lineNum">     209 </span>            : </a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineNoCov">          0 :                 if (parse_pid(d-&gt;d_name, &amp;pid) &lt; 0)</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineNoCov">          0 :                         continue;</span></a>
+<a name="212"><span class="lineNum">     212 </span>            : </a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineNoCov">          0 :                 if (ignore_proc(pid, sig == SIGKILL &amp;&amp; !in_initrd()))</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :                         continue;</span></a>
+<a name="215"><span class="lineNum">     215 </span>            : </a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :                 if (sig == SIGKILL) {</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :                         _cleanup_free_ char *s = NULL;</span></a>
+<a name="218"><span class="lineNum">     218 </span>            : </a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineNoCov">          0 :                         get_process_comm(pid, &amp;s);</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineNoCov">          0 :                         log_notice(&quot;Sending SIGKILL to PID &quot;PID_FMT&quot; (%s).&quot;, pid, strna(s));</span></a>
+<a name="221"><span class="lineNum">     221 </span>            :                 }</a>
+<a name="222"><span class="lineNum">     222 </span>            : </a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineNoCov">          0 :                 if (kill(pid, sig) &gt;= 0) {</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineNoCov">          0 :                         n_killed++;</span></a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineNoCov">          0 :                         if (pids) {</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineNoCov">          0 :                                 r = set_put(pids, PID_TO_PTR(pid));</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineNoCov">          0 :                                 if (r &lt; 0)</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineNoCov">          0 :                                         log_oom();</span></a>
+<a name="229"><span class="lineNum">     229 </span>            :                         }</a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineNoCov">          0 :                 } else if (errno != ENOENT)</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineNoCov">          0 :                         log_warning_errno(errno, &quot;Could not kill %d: %m&quot;, pid);</span></a>
+<a name="232"><span class="lineNum">     232 </span>            : </a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineNoCov">          0 :                 if (send_sighup) {</span></a>
+<a name="234"><span class="lineNum">     234 </span>            :                         /* Optionally, also send a SIGHUP signal, but</a>
+<a name="235"><span class="lineNum">     235 </span>            :                         only if the process has a controlling</a>
+<a name="236"><span class="lineNum">     236 </span>            :                         tty. This is useful to allow handling of</a>
+<a name="237"><span class="lineNum">     237 </span>            :                         shells which ignore SIGTERM but react to</a>
+<a name="238"><span class="lineNum">     238 </span>            :                         SIGHUP. We do not send this to processes that</a>
+<a name="239"><span class="lineNum">     239 </span>            :                         have no controlling TTY since we don't want to</a>
+<a name="240"><span class="lineNum">     240 </span>            :                         trigger reloads of daemon processes. Also we</a>
+<a name="241"><span class="lineNum">     241 </span>            :                         make sure to only send this after SIGTERM so</a>
+<a name="242"><span class="lineNum">     242 </span>            :                         that SIGTERM is always first in the queue. */</a>
+<a name="243"><span class="lineNum">     243 </span>            : </a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineNoCov">          0 :                         if (get_ctty_devnr(pid, NULL) &gt;= 0)</span></a>
+<a name="245"><span class="lineNum">     245 </span>            :                                 /* it's OK if the process is gone, just ignore the result */</a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineNoCov">          0 :                                 (void) kill(pid, SIGHUP);</span></a>
+<a name="247"><span class="lineNum">     247 </span>            :                 }</a>
+<a name="248"><span class="lineNum">     248 </span>            :         }</a>
+<a name="249"><span class="lineNum">     249 </span>            : </a>
+<a name="250"><span class="lineNum">     250 </span>            :         return n_killed;</a>
+<a name="251"><span class="lineNum">     251 </span>            : }</a>
+<a name="252"><span class="lineNum">     252 </span>            : </a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 : int broadcast_signal(int sig, bool wait_for_exit, bool send_sighup, usec_t timeout) {</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineNoCov">          0 :         int n_children_left;</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineNoCov">          0 :         sigset_t mask, oldmask;</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineNoCov">          0 :         _cleanup_set_free_ Set *pids = NULL;</span></a>
+<a name="257"><span class="lineNum">     257 </span>            : </a>
+<a name="258"><span class="lineNum">     258 </span>            :         /* Send the specified signal to all remaining processes, if not excluded by ignore_proc().</a>
+<a name="259"><span class="lineNum">     259 </span>            :          * Return:</a>
+<a name="260"><span class="lineNum">     260 </span>            :          *  - The number of processes still &quot;alive&quot; after the timeout (that should have been killed)</a>
+<a name="261"><span class="lineNum">     261 </span>            :          *    if the function needs to wait for the end of the processes (wait_for_exit).</a>
+<a name="262"><span class="lineNum">     262 </span>            :          *  - Otherwise, the number of processes to which the specified signal was sent */</a>
+<a name="263"><span class="lineNum">     263 </span>            : </a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineNoCov">          0 :         if (wait_for_exit)</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineNoCov">          0 :                 pids = set_new(NULL);</span></a>
+<a name="266"><span class="lineNum">     266 </span>            : </a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineNoCov">          0 :         assert_se(sigemptyset(&amp;mask) == 0);</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineNoCov">          0 :         assert_se(sigaddset(&amp;mask, SIGCHLD) == 0);</span></a>
+<a name="269"><span class="lineNum">     269 </span><span class="lineNoCov">          0 :         assert_se(sigprocmask(SIG_BLOCK, &amp;mask, &amp;oldmask) == 0);</span></a>
+<a name="270"><span class="lineNum">     270 </span>            : </a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :         if (kill(-1, SIGSTOP) &lt; 0 &amp;&amp; errno != ESRCH)</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineNoCov">          0 :                 log_warning_errno(errno, &quot;kill(-1, SIGSTOP) failed: %m&quot;);</span></a>
+<a name="273"><span class="lineNum">     273 </span>            : </a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineNoCov">          0 :         n_children_left = killall(sig, pids, send_sighup);</span></a>
+<a name="275"><span class="lineNum">     275 </span>            : </a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :         if (kill(-1, SIGCONT) &lt; 0 &amp;&amp; errno != ESRCH)</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineNoCov">          0 :                 log_warning_errno(errno, &quot;kill(-1, SIGCONT) failed: %m&quot;);</span></a>
+<a name="278"><span class="lineNum">     278 </span>            : </a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineNoCov">          0 :         if (wait_for_exit &amp;&amp; n_children_left &gt; 0)</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineNoCov">          0 :                 n_children_left = wait_for_children(pids, &amp;mask, timeout);</span></a>
+<a name="281"><span class="lineNum">     281 </span>            : </a>
+<a name="282"><span class="lineNum">     282 </span><span class="lineNoCov">          0 :         assert_se(sigprocmask(SIG_SETMASK, &amp;oldmask, NULL) == 0);</span></a>
+<a name="283"><span class="lineNum">     283 </span>            : </a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineNoCov">          0 :         return n_children_left;</span></a>
+<a name="285"><span class="lineNum">     285 </span>            : }</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - combined.info - src/basic/macro.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">src/basic</a> - macro.h<span style="font-size: 80%;"> (source / <a href="macro.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">combined.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">33.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-04-25 18:24:10</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* SPDX-License-Identifier: LGPL-2.1+ */</a>
+<a name="2"><span class="lineNum">       2 </span>            : #pragma once</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #include &lt;assert.h&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            : #include &lt;errno.h&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;inttypes.h&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;stdbool.h&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &lt;sys/param.h&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;sys/sysmacros.h&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;sys/types.h&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : </a>
+<a name="12"><span class="lineNum">      12 </span>            : #define _printf_(a, b) __attribute__((__format__(printf, a, b)))</a>
+<a name="13"><span class="lineNum">      13 </span>            : #ifdef __clang__</a>
+<a name="14"><span class="lineNum">      14 </span>            : #  define _alloc_(...)</a>
+<a name="15"><span class="lineNum">      15 </span>            : #else</a>
+<a name="16"><span class="lineNum">      16 </span>            : #  define _alloc_(...) __attribute__((__alloc_size__(__VA_ARGS__)))</a>
+<a name="17"><span class="lineNum">      17 </span>            : #endif</a>
+<a name="18"><span class="lineNum">      18 </span>            : #define _sentinel_ __attribute__((__sentinel__))</a>
+<a name="19"><span class="lineNum">      19 </span>            : #define _section_(x) __attribute__((__section__(x)))</a>
+<a name="20"><span class="lineNum">      20 </span>            : #define _used_ __attribute__((__used__))</a>
+<a name="21"><span class="lineNum">      21 </span>            : #define _unused_ __attribute__((__unused__))</a>
+<a name="22"><span class="lineNum">      22 </span>            : #define _destructor_ __attribute__((__destructor__))</a>
+<a name="23"><span class="lineNum">      23 </span>            : #define _pure_ __attribute__((__pure__))</a>
+<a name="24"><span class="lineNum">      24 </span>            : #define _const_ __attribute__((__const__))</a>
+<a name="25"><span class="lineNum">      25 </span>            : #define _deprecated_ __attribute__((__deprecated__))</a>
+<a name="26"><span class="lineNum">      26 </span>            : #define _packed_ __attribute__((__packed__))</a>
+<a name="27"><span class="lineNum">      27 </span>            : #define _malloc_ __attribute__((__malloc__))</a>
+<a name="28"><span class="lineNum">      28 </span>            : #define _weak_ __attribute__((__weak__))</a>
+<a name="29"><span class="lineNum">      29 </span>            : #define _likely_(x) (__builtin_expect(!!(x), 1))</a>
+<a name="30"><span class="lineNum">      30 </span>            : #define _unlikely_(x) (__builtin_expect(!!(x), 0))</a>
+<a name="31"><span class="lineNum">      31 </span>            : #define _public_ __attribute__((__visibility__(&quot;default&quot;)))</a>
+<a name="32"><span class="lineNum">      32 </span>            : #define _hidden_ __attribute__((__visibility__(&quot;hidden&quot;)))</a>
+<a name="33"><span class="lineNum">      33 </span>            : #define _weakref_(x) __attribute__((__weakref__(#x)))</a>
+<a name="34"><span class="lineNum">      34 </span>            : #define _align_(x) __attribute__((__aligned__(x)))</a>
+<a name="35"><span class="lineNum">      35 </span>            : #define _alignas_(x) __attribute__((__aligned__(__alignof(x))))</a>
+<a name="36"><span class="lineNum">      36 </span>            : #define _alignptr_ __attribute__((__aligned__(sizeof(void*))))</a>
+<a name="37"><span class="lineNum">      37 </span>            : #define _cleanup_(x) __attribute__((__cleanup__(x)))</a>
+<a name="38"><span class="lineNum">      38 </span>            : #if __GNUC__ &gt;= 7</a>
+<a name="39"><span class="lineNum">      39 </span>            : #define _fallthrough_ __attribute__((__fallthrough__))</a>
+<a name="40"><span class="lineNum">      40 </span>            : #else</a>
+<a name="41"><span class="lineNum">      41 </span>            : #define _fallthrough_</a>
+<a name="42"><span class="lineNum">      42 </span>            : #endif</a>
+<a name="43"><span class="lineNum">      43 </span>            : /* Define C11 noreturn without &lt;stdnoreturn.h&gt; and even on older gcc</a>
+<a name="44"><span class="lineNum">      44 </span>            :  * compiler versions */</a>
+<a name="45"><span class="lineNum">      45 </span>            : #ifndef _noreturn_</a>
+<a name="46"><span class="lineNum">      46 </span>            : #if __STDC_VERSION__ &gt;= 201112L</a>
+<a name="47"><span class="lineNum">      47 </span>            : #define _noreturn_ _Noreturn</a>
+<a name="48"><span class="lineNum">      48 </span>            : #else</a>
+<a name="49"><span class="lineNum">      49 </span>            : #define _noreturn_ __attribute__((__noreturn__))</a>
+<a name="50"><span class="lineNum">      50 </span>            : #endif</a>
+<a name="51"><span class="lineNum">      51 </span>            : #endif</a>
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<a name="53"><span class="lineNum">      53 </span>            : #if !defined(HAS_FEATURE_MEMORY_SANITIZER)</a>
+<a name="54"><span class="lineNum">      54 </span>            : #  if defined(__has_feature)</a>
+<a name="55"><span class="lineNum">      55 </span>            : #    if __has_feature(memory_sanitizer)</a>
+<a name="56"><span class="lineNum">      56 </span>            : #      define HAS_FEATURE_MEMORY_SANITIZER 1</a>
+<a name="57"><span class="lineNum">      57 </span>            : #    endif</a>
+<a name="58"><span class="lineNum">      58 </span>            : #  endif</a>
+<a name="59"><span class="lineNum">      59 </span>            : #  if !defined(HAS_FEATURE_MEMORY_SANITIZER)</a>
+<a name="60"><span class="lineNum">      60 </span>            : #    define HAS_FEATURE_MEMORY_SANITIZER 0</a>
+<a name="61"><span class="lineNum">      61 </span>            : #  endif</a>
+<a name="62"><span class="lineNum">      62 </span>            : #endif</a>
+<a name="63"><span class="lineNum">      63 </span>            : </a>
+<a name="64"><span class="lineNum">      64 </span>            : #if !defined(HAS_FEATURE_ADDRESS_SANITIZER)</a>
+<a name="65"><span class="lineNum">      65 </span>            : #  ifdef __SANITIZE_ADDRESS__</a>
+<a name="66"><span class="lineNum">      66 </span>            : #      define HAS_FEATURE_ADDRESS_SANITIZER 1</a>
+<a name="67"><span class="lineNum">      67 </span>            : #  elif defined(__has_feature)</a>
+<a name="68"><span class="lineNum">      68 </span>            : #    if __has_feature(address_sanitizer)</a>
+<a name="69"><span class="lineNum">      69 </span>            : #      define HAS_FEATURE_ADDRESS_SANITIZER 1</a>
+<a name="70"><span class="lineNum">      70 </span>            : #    endif</a>
+<a name="71"><span class="lineNum">      71 </span>            : #  endif</a>
+<a name="72"><span class="lineNum">      72 </span>            : #  if !defined(HAS_FEATURE_ADDRESS_SANITIZER)</a>
+<a name="73"><span class="lineNum">      73 </span>            : #    define HAS_FEATURE_ADDRESS_SANITIZER 0</a>
+<a name="74"><span class="lineNum">      74 </span>            : #  endif</a>
+<a name="75"><span class="lineNum">      75 </span>            : #endif</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span>            : /* Note: on GCC &quot;no_sanitize_address&quot; is a function attribute only, on llvm it may also be applied to global</a>
+<a name="78"><span class="lineNum">      78 </span>            :  * variables. We define a specific macro which knows this. Note that on GCC we don't need this decorator so much, since</a>
+<a name="79"><span class="lineNum">      79 </span>            :  * our primary usecase for this attribute is registration structures placed in named ELF sections which shall not be</a>
+<a name="80"><span class="lineNum">      80 </span>            :  * padded, but GCC doesn't pad those anyway if AddressSanitizer is enabled. */</a>
+<a name="81"><span class="lineNum">      81 </span>            : #if HAS_FEATURE_ADDRESS_SANITIZER &amp;&amp; defined(__clang__)</a>
+<a name="82"><span class="lineNum">      82 </span>            : #define _variable_no_sanitize_address_ __attribute__((__no_sanitize_address__))</a>
+<a name="83"><span class="lineNum">      83 </span>            : #else</a>
+<a name="84"><span class="lineNum">      84 </span>            : #define _variable_no_sanitize_address_</a>
+<a name="85"><span class="lineNum">      85 </span>            : #endif</a>
+<a name="86"><span class="lineNum">      86 </span>            : </a>
+<a name="87"><span class="lineNum">      87 </span>            : /* Temporarily disable some warnings */</a>
+<a name="88"><span class="lineNum">      88 </span>            : #define DISABLE_WARNING_FORMAT_NONLITERAL                               \</a>
+<a name="89"><span class="lineNum">      89 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;);                                 \</a>
+<a name="90"><span class="lineNum">      90 </span>            :         _Pragma(&quot;GCC diagnostic ignored \&quot;-Wformat-nonliteral\&quot;&quot;)</a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span>            : #define DISABLE_WARNING_MISSING_PROTOTYPES                              \</a>
+<a name="93"><span class="lineNum">      93 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;);                                 \</a>
+<a name="94"><span class="lineNum">      94 </span>            :         _Pragma(&quot;GCC diagnostic ignored \&quot;-Wmissing-prototypes\&quot;&quot;)</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span>            : #define DISABLE_WARNING_NONNULL                                         \</a>
+<a name="97"><span class="lineNum">      97 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;);                                 \</a>
+<a name="98"><span class="lineNum">      98 </span>            :         _Pragma(&quot;GCC diagnostic ignored \&quot;-Wnonnull\&quot;&quot;)</a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span>            : #define DISABLE_WARNING_SHADOW                                          \</a>
+<a name="101"><span class="lineNum">     101 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;);                                 \</a>
+<a name="102"><span class="lineNum">     102 </span>            :         _Pragma(&quot;GCC diagnostic ignored \&quot;-Wshadow\&quot;&quot;)</a>
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<a name="104"><span class="lineNum">     104 </span>            : #define DISABLE_WARNING_INCOMPATIBLE_POINTER_TYPES                      \</a>
+<a name="105"><span class="lineNum">     105 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;);                                 \</a>
+<a name="106"><span class="lineNum">     106 </span>            :         _Pragma(&quot;GCC diagnostic ignored \&quot;-Wincompatible-pointer-types\&quot;&quot;)</a>
+<a name="107"><span class="lineNum">     107 </span>            : </a>
+<a name="108"><span class="lineNum">     108 </span>            : #if HAVE_WSTRINGOP_TRUNCATION</a>
+<a name="109"><span class="lineNum">     109 </span>            : #  define DISABLE_WARNING_STRINGOP_TRUNCATION                           \</a>
+<a name="110"><span class="lineNum">     110 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;);                                 \</a>
+<a name="111"><span class="lineNum">     111 </span>            :         _Pragma(&quot;GCC diagnostic ignored \&quot;-Wstringop-truncation\&quot;&quot;)</a>
+<a name="112"><span class="lineNum">     112 </span>            : #else</a>
+<a name="113"><span class="lineNum">     113 </span>            : #  define DISABLE_WARNING_STRINGOP_TRUNCATION                           \</a>
+<a name="114"><span class="lineNum">     114 </span>            :         _Pragma(&quot;GCC diagnostic push&quot;)</a>
+<a name="115"><span class="lineNum">     115 </span>            : #endif</a>
+<a name="116"><span class="lineNum">     116 </span>            : </a>
+<a name="117"><span class="lineNum">     117 </span>            : #define REENABLE_WARNING                                                \</a>
+<a name="118"><span class="lineNum">     118 </span>            :         _Pragma(&quot;GCC diagnostic pop&quot;)</a>
+<a name="119"><span class="lineNum">     119 </span>            : </a>
+<a name="120"><span class="lineNum">     120 </span>            : /* automake test harness */</a>
+<a name="121"><span class="lineNum">     121 </span>            : #define EXIT_TEST_SKIP 77</a>
+<a name="122"><span class="lineNum">     122 </span>            : </a>
+<a name="123"><span class="lineNum">     123 </span>            : #define XSTRINGIFY(x) #x</a>
+<a name="124"><span class="lineNum">     124 </span>            : #define STRINGIFY(x) XSTRINGIFY(x)</a>
+<a name="125"><span class="lineNum">     125 </span>            : </a>
+<a name="126"><span class="lineNum">     126 </span>            : #define XCONCATENATE(x, y) x ## y</a>
+<a name="127"><span class="lineNum">     127 </span>            : #define CONCATENATE(x, y) XCONCATENATE(x, y)</a>
+<a name="128"><span class="lineNum">     128 </span>            : </a>
+<a name="129"><span class="lineNum">     129 </span>            : #define UNIQ_T(x, uniq) CONCATENATE(__unique_prefix_, CONCATENATE(x, uniq))</a>
+<a name="130"><span class="lineNum">     130 </span>            : #define UNIQ __COUNTER__</a>
+<a name="131"><span class="lineNum">     131 </span>            : </a>
+<a name="132"><span class="lineNum">     132 </span>            : /* builtins */</a>
+<a name="133"><span class="lineNum">     133 </span>            : #if __SIZEOF_INT__ == 4</a>
+<a name="134"><span class="lineNum">     134 </span>            : #define BUILTIN_FFS_U32(x) __builtin_ffs(x);</a>
+<a name="135"><span class="lineNum">     135 </span>            : #elif __SIZEOF_LONG__ == 4</a>
+<a name="136"><span class="lineNum">     136 </span>            : #define BUILTIN_FFS_U32(x) __builtin_ffsl(x);</a>
+<a name="137"><span class="lineNum">     137 </span>            : #else</a>
+<a name="138"><span class="lineNum">     138 </span>            : #error &quot;neither int nor long are four bytes long?!?&quot;</a>
+<a name="139"><span class="lineNum">     139 </span>            : #endif</a>
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<a name="141"><span class="lineNum">     141 </span>            : /* Rounds up */</a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span>            : #define ALIGN4(l) (((l) + 3) &amp; ~3)</a>
+<a name="144"><span class="lineNum">     144 </span>            : #define ALIGN8(l) (((l) + 7) &amp; ~7)</a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span>            : #if __SIZEOF_POINTER__ == 8</a>
+<a name="147"><span class="lineNum">     147 </span>            : #define ALIGN(l) ALIGN8(l)</a>
+<a name="148"><span class="lineNum">     148 </span>            : #elif __SIZEOF_POINTER__ == 4</a>
+<a name="149"><span class="lineNum">     149 </span>            : #define ALIGN(l) ALIGN4(l)</a>
+<a name="150"><span class="lineNum">     150 </span>            : #else</a>
+<a name="151"><span class="lineNum">     151 </span>            : #error &quot;Wut? Pointers are neither 4 nor 8 bytes long?&quot;</a>
+<a name="152"><span class="lineNum">     152 </span>            : #endif</a>
+<a name="153"><span class="lineNum">     153 </span>            : </a>
+<a name="154"><span class="lineNum">     154 </span>            : #define ALIGN_PTR(p) ((void*) ALIGN((unsigned long) (p)))</a>
+<a name="155"><span class="lineNum">     155 </span>            : #define ALIGN4_PTR(p) ((void*) ALIGN4((unsigned long) (p)))</a>
+<a name="156"><span class="lineNum">     156 </span>            : #define ALIGN8_PTR(p) ((void*) ALIGN8((unsigned long) (p)))</a>
+<a name="157"><span class="lineNum">     157 </span>            : </a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">     248800 : static inline size_t ALIGN_TO(size_t l, size_t ali) {</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">     248712 :         return ((l + ali - 1) &amp; ~(ali - 1));</span></a>
+<a name="160"><span class="lineNum">     160 </span>            : }</a>
+<a name="161"><span class="lineNum">     161 </span>            : </a>
+<a name="162"><span class="lineNum">     162 </span>            : #define ALIGN_TO_PTR(p, ali) ((void*) ALIGN_TO((unsigned long) (p), (ali)))</a>
+<a name="163"><span class="lineNum">     163 </span>            : </a>
+<a name="164"><span class="lineNum">     164 </span>            : /* align to next higher power-of-2 (except for: 0 =&gt; 0, overflow =&gt; 0) */</a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 : static inline unsigned long ALIGN_POWER2(unsigned long u) {</span></a>
+<a name="166"><span class="lineNum">     166 </span>            :         /* clz(0) is undefined */</a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :         if (u == 1)</span></a>
+<a name="168"><span class="lineNum">     168 </span>            :                 return 1;</a>
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<a name="170"><span class="lineNum">     170 </span>            :         /* left-shift overflow is undefined */</a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :         if (__builtin_clzl(u - 1UL) &lt; 1)</span></a>
+<a name="172"><span class="lineNum">     172 </span>            :                 return 0;</a>
+<a name="173"><span class="lineNum">     173 </span>            : </a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :         return 1UL &lt;&lt; (sizeof(u) * 8 - __builtin_clzl(u - 1UL));</span></a>
+<a name="175"><span class="lineNum">     175 </span>            : }</a>
+<a name="176"><span class="lineNum">     176 </span>            : </a>
+<a name="177"><span class="lineNum">     177 </span>            : #ifndef __COVERITY__</a>
+<a name="178"><span class="lineNum">     178 </span>            : #  define VOID_0 ((void)0)</a>
+<a name="179"><span class="lineNum">     179 </span>            : #else</a>
+<a name="180"><span class="lineNum">     180 </span>            : #  define VOID_0 ((void*)0)</a>
+<a name="181"><span class="lineNum">     181 </span>            : #endif</a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            : #define ELEMENTSOF(x)                                                   \</a>
+<a name="184"><span class="lineNum">     184 </span>            :         (__builtin_choose_expr(                                         \</a>
+<a name="185"><span class="lineNum">     185 </span>            :                 !__builtin_types_compatible_p(typeof(x), typeof(&amp;*(x))), \</a>
+<a name="186"><span class="lineNum">     186 </span>            :                 sizeof(x)/sizeof((x)[0]),                               \</a>
+<a name="187"><span class="lineNum">     187 </span>            :                 VOID_0))</a>
+<a name="188"><span class="lineNum">     188 </span>            : </a>
+<a name="189"><span class="lineNum">     189 </span>            : /*</a>
+<a name="190"><span class="lineNum">     190 </span>            :  * STRLEN - return the length of a string literal, minus the trailing NUL byte.</a>
+<a name="191"><span class="lineNum">     191 </span>            :  *          Contrary to strlen(), this is a constant expression.</a>
+<a name="192"><span class="lineNum">     192 </span>            :  * @x: a string literal.</a>
+<a name="193"><span class="lineNum">     193 </span>            :  */</a>
+<a name="194"><span class="lineNum">     194 </span>            : #define STRLEN(x) (sizeof(&quot;&quot;x&quot;&quot;) - 1)</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            : /*</a>
+<a name="197"><span class="lineNum">     197 </span>            :  * container_of - cast a member of a structure out to the containing structure</a>
+<a name="198"><span class="lineNum">     198 </span>            :  * @ptr: the pointer to the member.</a>
+<a name="199"><span class="lineNum">     199 </span>            :  * @type: the type of the container struct this is embedded in.</a>
+<a name="200"><span class="lineNum">     200 </span>            :  * @member: the name of the member within the struct.</a>
+<a name="201"><span class="lineNum">     201 </span>            :  */</a>
+<a name="202"><span class="lineNum">     202 </span>            : #define container_of(ptr, type, member) __container_of(UNIQ, (ptr), type, member)</a>
+<a name="203"><span class="lineNum">     203 </span>            : #define __container_of(uniq, ptr, type, member)                         \</a>
+<a name="204"><span class="lineNum">     204 </span>            :         ({                                                              \</a>
+<a name="205"><span class="lineNum">     205 </span>            :                 const typeof( ((type*)0)-&gt;member ) *UNIQ_T(A, uniq) = (ptr); \</a>
+<a name="206"><span class="lineNum">     206 </span>            :                 (type*)( (char *)UNIQ_T(A, uniq) - offsetof(type, member) ); \</a>
+<a name="207"><span class="lineNum">     207 </span>            :         })</a>
+<a name="208"><span class="lineNum">     208 </span>            : </a>
+<a name="209"><span class="lineNum">     209 </span>            : #undef MAX</a>
+<a name="210"><span class="lineNum">     210 </span>            : #define MAX(a, b) __MAX(UNIQ, (a), UNIQ, (b))</a>
+<a name="211"><span class="lineNum">     211 </span>            : #define __MAX(aq, a, bq, b)                             \</a>
+<a name="212"><span class="lineNum">     212 </span>            :         ({                                              \</a>
+<a name="213"><span class="lineNum">     213 </span>            :                 const typeof(a) UNIQ_T(A, aq) = (a);    \</a>
+<a name="214"><span class="lineNum">     214 </span>            :                 const typeof(b) UNIQ_T(B, bq) = (b);    \</a>
+<a name="215"><span class="lineNum">     215 </span>            :                 UNIQ_T(A, aq) &gt; UNIQ_T(B, bq) ? UNIQ_T(A, aq) : UNIQ_T(B, bq); \</a>
+<a name="216"><span class="lineNum">     216 </span>            :         })</a>
+<a name="217"><span class="lineNum">     217 </span>            : </a>
+<a name="218"><span class="lineNum">     218 </span>            : /* evaluates to (void) if _A or _B are not constant or of different types */</a>
+<a name="219"><span class="lineNum">     219 </span>            : #define CONST_MAX(_A, _B) \</a>
+<a name="220"><span class="lineNum">     220 </span>            :         (__builtin_choose_expr(                                         \</a>
+<a name="221"><span class="lineNum">     221 </span>            :                 __builtin_constant_p(_A) &amp;&amp;                             \</a>
+<a name="222"><span class="lineNum">     222 </span>            :                 __builtin_constant_p(_B) &amp;&amp;                             \</a>
+<a name="223"><span class="lineNum">     223 </span>            :                 __builtin_types_compatible_p(typeof(_A), typeof(_B)),   \</a>
+<a name="224"><span class="lineNum">     224 </span>            :                 ((_A) &gt; (_B)) ? (_A) : (_B),                            \</a>
+<a name="225"><span class="lineNum">     225 </span>            :                 VOID_0))</a>
+<a name="226"><span class="lineNum">     226 </span>            : </a>
+<a name="227"><span class="lineNum">     227 </span>            : /* takes two types and returns the size of the larger one */</a>
+<a name="228"><span class="lineNum">     228 </span>            : #define MAXSIZE(A, B) (sizeof(union _packed_ { typeof(A) a; typeof(B) b; }))</a>
+<a name="229"><span class="lineNum">     229 </span>            : </a>
+<a name="230"><span class="lineNum">     230 </span>            : #define MAX3(x, y, z)                                   \</a>
+<a name="231"><span class="lineNum">     231 </span>            :         ({                                              \</a>
+<a name="232"><span class="lineNum">     232 </span>            :                 const typeof(x) _c = MAX(x, y);         \</a>
+<a name="233"><span class="lineNum">     233 </span>            :                 MAX(_c, z);                             \</a>
+<a name="234"><span class="lineNum">     234 </span>            :         })</a>
+<a name="235"><span class="lineNum">     235 </span>            : </a>
+<a name="236"><span class="lineNum">     236 </span>            : #undef MIN</a>
+<a name="237"><span class="lineNum">     237 </span>            : #define MIN(a, b) __MIN(UNIQ, (a), UNIQ, (b))</a>
+<a name="238"><span class="lineNum">     238 </span>            : #define __MIN(aq, a, bq, b)                             \</a>
+<a name="239"><span class="lineNum">     239 </span>            :         ({                                              \</a>
+<a name="240"><span class="lineNum">     240 </span>            :                 const typeof(a) UNIQ_T(A, aq) = (a);    \</a>
+<a name="241"><span class="lineNum">     241 </span>            :                 const typeof(b) UNIQ_T(B, bq) = (b);    \</a>
+<a name="242"><span class="lineNum">     242 </span>            :                 UNIQ_T(A, aq) &lt; UNIQ_T(B, bq) ? UNIQ_T(A, aq) : UNIQ_T(B, bq); \</a>
+<a name="243"><span class="lineNum">     243 </span>            :         })</a>
+<a name="244"><span class="lineNum">     244 </span>            : </a>
+<a name="245"><span class="lineNum">     245 </span>            : #define MIN3(x, y, z)                                   \</a>
+<a name="246"><span class="lineNum">     246 </span>            :         ({                                              \</a>
+<a name="247"><span class="lineNum">     247 </span>            :                 const typeof(x) _c = MIN(x, y);         \</a>
+<a name="248"><span class="lineNum">     248 </span>            :                 MIN(_c, z);                             \</a>
+<a name="249"><span class="lineNum">     249 </span>            :         })</a>
+<a name="250"><span class="lineNum">     250 </span>            : </a>
+<a name="251"><span class="lineNum">     251 </span>            : #define LESS_BY(a, b) __LESS_BY(UNIQ, (a), UNIQ, (b))</a>
+<a name="252"><span class="lineNum">     252 </span>            : #define __LESS_BY(aq, a, bq, b)                         \</a>
+<a name="253"><span class="lineNum">     253 </span>            :         ({                                              \</a>
+<a name="254"><span class="lineNum">     254 </span>            :                 const typeof(a) UNIQ_T(A, aq) = (a);    \</a>
+<a name="255"><span class="lineNum">     255 </span>            :                 const typeof(b) UNIQ_T(B, bq) = (b);    \</a>
+<a name="256"><span class="lineNum">     256 </span>            :                 UNIQ_T(A, aq) &gt; UNIQ_T(B, bq) ? UNIQ_T(A, aq) - UNIQ_T(B, bq) : 0; \</a>
+<a name="257"><span class="lineNum">     257 </span>            :         })</a>
+<a name="258"><span class="lineNum">     258 </span>            : </a>
+<a name="259"><span class="lineNum">     259 </span>            : #define CMP(a, b) __CMP(UNIQ, (a), UNIQ, (b))</a>
+<a name="260"><span class="lineNum">     260 </span>            : #define __CMP(aq, a, bq, b)                             \</a>
+<a name="261"><span class="lineNum">     261 </span>            :         ({                                              \</a>
+<a name="262"><span class="lineNum">     262 </span>            :                 const typeof(a) UNIQ_T(A, aq) = (a);    \</a>
+<a name="263"><span class="lineNum">     263 </span>            :                 const typeof(b) UNIQ_T(B, bq) = (b);    \</a>
+<a name="264"><span class="lineNum">     264 </span>            :                 UNIQ_T(A, aq) &lt; UNIQ_T(B, bq) ? -1 :    \</a>
+<a name="265"><span class="lineNum">     265 </span>            :                 UNIQ_T(A, aq) &gt; UNIQ_T(B, bq) ? 1 : 0;  \</a>
+<a name="266"><span class="lineNum">     266 </span>            :         })</a>
+<a name="267"><span class="lineNum">     267 </span>            : </a>
+<a name="268"><span class="lineNum">     268 </span>            : #undef CLAMP</a>
+<a name="269"><span class="lineNum">     269 </span>            : #define CLAMP(x, low, high) __CLAMP(UNIQ, (x), UNIQ, (low), UNIQ, (high))</a>
+<a name="270"><span class="lineNum">     270 </span>            : #define __CLAMP(xq, x, lowq, low, highq, high)                          \</a>
+<a name="271"><span class="lineNum">     271 </span>            :         ({                                                              \</a>
+<a name="272"><span class="lineNum">     272 </span>            :                 const typeof(x) UNIQ_T(X, xq) = (x);                    \</a>
+<a name="273"><span class="lineNum">     273 </span>            :                 const typeof(low) UNIQ_T(LOW, lowq) = (low);            \</a>
+<a name="274"><span class="lineNum">     274 </span>            :                 const typeof(high) UNIQ_T(HIGH, highq) = (high);        \</a>
+<a name="275"><span class="lineNum">     275 </span>            :                         UNIQ_T(X, xq) &gt; UNIQ_T(HIGH, highq) ?           \</a>
+<a name="276"><span class="lineNum">     276 </span>            :                                 UNIQ_T(HIGH, highq) :                   \</a>
+<a name="277"><span class="lineNum">     277 </span>            :                                 UNIQ_T(X, xq) &lt; UNIQ_T(LOW, lowq) ?     \</a>
+<a name="278"><span class="lineNum">     278 </span>            :                                         UNIQ_T(LOW, lowq) :             \</a>
+<a name="279"><span class="lineNum">     279 </span>            :                                         UNIQ_T(X, xq);                  \</a>
+<a name="280"><span class="lineNum">     280 </span>            :         })</a>
+<a name="281"><span class="lineNum">     281 </span>            : </a>
+<a name="282"><span class="lineNum">     282 </span>            : /* [(x + y - 1) / y] suffers from an integer overflow, even though the</a>
+<a name="283"><span class="lineNum">     283 </span>            :  * computation should be possible in the given type. Therefore, we use</a>
+<a name="284"><span class="lineNum">     284 </span>            :  * [x / y + !!(x % y)]. Note that on &quot;Real CPUs&quot; a division returns both the</a>
+<a name="285"><span class="lineNum">     285 </span>            :  * quotient and the remainder, so both should be equally fast. */</a>
+<a name="286"><span class="lineNum">     286 </span>            : #define DIV_ROUND_UP(x, y) __DIV_ROUND_UP(UNIQ, (x), UNIQ, (y))</a>
+<a name="287"><span class="lineNum">     287 </span>            : #define __DIV_ROUND_UP(xq, x, yq, y)                                    \</a>
+<a name="288"><span class="lineNum">     288 </span>            :         ({                                                              \</a>
+<a name="289"><span class="lineNum">     289 </span>            :                 const typeof(x) UNIQ_T(X, xq) = (x);                    \</a>
+<a name="290"><span class="lineNum">     290 </span>            :                 const typeof(y) UNIQ_T(Y, yq) = (y);                    \</a>
+<a name="291"><span class="lineNum">     291 </span>            :                 (UNIQ_T(X, xq) / UNIQ_T(Y, yq) + !!(UNIQ_T(X, xq) % UNIQ_T(Y, yq))); \</a>
+<a name="292"><span class="lineNum">     292 </span>            :         })</a>
+<a name="293"><span class="lineNum">     293 </span>            : </a>
+<a name="294"><span class="lineNum">     294 </span>            : #ifdef __COVERITY__</a>
+<a name="295"><span class="lineNum">     295 </span>            : </a>
+<a name="296"><span class="lineNum">     296 </span>            : /* Use special definitions of assertion macros in order to prevent</a>
+<a name="297"><span class="lineNum">     297 </span>            :  * false positives of ASSERT_SIDE_EFFECT on Coverity static analyzer</a>
+<a name="298"><span class="lineNum">     298 </span>            :  * for uses of assert_se() and assert_return().</a>
+<a name="299"><span class="lineNum">     299 </span>            :  *</a>
+<a name="300"><span class="lineNum">     300 </span>            :  * These definitions make expression go through a (trivial) function</a>
+<a name="301"><span class="lineNum">     301 </span>            :  * call to ensure they are not discarded. Also use ! or !! to ensure</a>
+<a name="302"><span class="lineNum">     302 </span>            :  * the boolean expressions are seen as such.</a>
+<a name="303"><span class="lineNum">     303 </span>            :  *</a>
+<a name="304"><span class="lineNum">     304 </span>            :  * This technique has been described and recommended in:</a>
+<a name="305"><span class="lineNum">     305 </span>            :  * https://community.synopsys.com/s/question/0D534000046Yuzb/suppressing-assertsideeffect-for-functions-that-allow-for-sideeffects</a>
+<a name="306"><span class="lineNum">     306 </span>            :  */</a>
+<a name="307"><span class="lineNum">     307 </span>            : </a>
+<a name="308"><span class="lineNum">     308 </span>            : extern void __coverity_panic__(void);</a>
+<a name="309"><span class="lineNum">     309 </span>            : </a>
+<a name="310"><span class="lineNum">     310 </span>            : static inline void __coverity_check__(int condition) {</a>
+<a name="311"><span class="lineNum">     311 </span>            :         if (!condition)</a>
+<a name="312"><span class="lineNum">     312 </span>            :                 __coverity_panic__();</a>
+<a name="313"><span class="lineNum">     313 </span>            : }</a>
+<a name="314"><span class="lineNum">     314 </span>            : </a>
+<a name="315"><span class="lineNum">     315 </span>            : static inline int __coverity_check_and_return__(int condition) {</a>
+<a name="316"><span class="lineNum">     316 </span>            :         return condition;</a>
+<a name="317"><span class="lineNum">     317 </span>            : }</a>
+<a name="318"><span class="lineNum">     318 </span>            : </a>
+<a name="319"><span class="lineNum">     319 </span>            : #define assert_message_se(expr, message) __coverity_check__(!!(expr))</a>
+<a name="320"><span class="lineNum">     320 </span>            : </a>
+<a name="321"><span class="lineNum">     321 </span>            : #define assert_log(expr, message) __coverity_check_and_return__(!!(expr))</a>
+<a name="322"><span class="lineNum">     322 </span>            : </a>
+<a name="323"><span class="lineNum">     323 </span>            : #else  /* ! __COVERITY__ */</a>
+<a name="324"><span class="lineNum">     324 </span>            : </a>
+<a name="325"><span class="lineNum">     325 </span>            : #define assert_message_se(expr, message)                                \</a>
+<a name="326"><span class="lineNum">     326 </span>            :         do {                                                            \</a>
+<a name="327"><span class="lineNum">     327 </span>            :                 if (_unlikely_(!(expr)))                                \</a>
+<a name="328"><span class="lineNum">     328 </span>            :                         log_assert_failed(message, PROJECT_FILE, __LINE__, __PRETTY_FUNCTION__); \</a>
+<a name="329"><span class="lineNum">     329 </span>            :         } while (false)</a>
+<a name="330"><span class="lineNum">     330 </span>            : </a>
+<a name="331"><span class="lineNum">     331 </span>            : #define assert_log(expr, message) ((_likely_(expr))                     \</a>
+<a name="332"><span class="lineNum">     332 </span>            :         ? (true)                                                        \</a>
+<a name="333"><span class="lineNum">     333 </span>            :         : (log_assert_failed_return(message, PROJECT_FILE, __LINE__, __PRETTY_FUNCTION__), false))</a>
+<a name="334"><span class="lineNum">     334 </span>            : </a>
+<a name="335"><span class="lineNum">     335 </span>            : #endif  /* __COVERITY__ */</a>
+<a name="336"><span class="lineNum">     336 </span>            : </a>
+<a name="337"><span class="lineNum">     337 </span>            : #define assert_se(expr) assert_message_se(expr, #expr)</a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            : /* We override the glibc assert() here. */</a>
+<a name="340"><span class="lineNum">     340 </span>            : #undef assert</a>
+<a name="341"><span class="lineNum">     341 </span>            : #ifdef NDEBUG</a>
+<a name="342"><span class="lineNum">     342 </span>            : #define assert(expr) do {} while (false)</a>
+<a name="343"><span class="lineNum">     343 </span>            : #else</a>
+<a name="344"><span class="lineNum">     344 </span>            : #define assert(expr) assert_message_se(expr, #expr)</a>
+<a name="345"><span class="lineNum">     345 </span>            : #endif</a>
+<a name="346"><span class="lineNum">     346 </span>            : </a>
+<a name="347"><span class="lineNum">     347 </span>            : #define assert_not_reached(t)                                           \</a>
+<a name="348"><span class="lineNum">     348 </span>            :         log_assert_failed_unreachable(t, PROJECT_FILE, __LINE__, __PRETTY_FUNCTION__)</a>
+<a name="349"><span class="lineNum">     349 </span>            : </a>
+<a name="350"><span class="lineNum">     350 </span>            : #if defined(static_assert)</a>
+<a name="351"><span class="lineNum">     351 </span>            : #define assert_cc(expr)                                                 \</a>
+<a name="352"><span class="lineNum">     352 </span>            :         static_assert(expr, #expr)</a>
+<a name="353"><span class="lineNum">     353 </span>            : #else</a>
+<a name="354"><span class="lineNum">     354 </span>            : #define assert_cc(expr)                                                 \</a>
+<a name="355"><span class="lineNum">     355 </span>            :         struct CONCATENATE(_assert_struct_, __COUNTER__) {              \</a>
+<a name="356"><span class="lineNum">     356 </span>            :                 char x[(expr) ? 0 : -1];                                \</a>
+<a name="357"><span class="lineNum">     357 </span>            :         }</a>
+<a name="358"><span class="lineNum">     358 </span>            : #endif</a>
+<a name="359"><span class="lineNum">     359 </span>            : </a>
+<a name="360"><span class="lineNum">     360 </span>            : #define assert_return(expr, r)                                          \</a>
+<a name="361"><span class="lineNum">     361 </span>            :         do {                                                            \</a>
+<a name="362"><span class="lineNum">     362 </span>            :                 if (!assert_log(expr, #expr))                           \</a>
+<a name="363"><span class="lineNum">     363 </span>            :                         return (r);                                     \</a>
+<a name="364"><span class="lineNum">     364 </span>            :         } while (false)</a>
+<a name="365"><span class="lineNum">     365 </span>            : </a>
+<a name="366"><span class="lineNum">     366 </span>            : #define assert_return_errno(expr, r, err)                               \</a>
+<a name="367"><span class="lineNum">     367 </span>            :         do {                                                            \</a>
+<a name="368"><span class="lineNum">     368 </span>            :                 if (!assert_log(expr, #expr)) {                         \</a>
+<a name="369"><span class="lineNum">     369 </span>            :                         errno = err;                                    \</a>
+<a name="370"><span class="lineNum">     370 </span>            :                         return (r);                                     \</a>
+<a name="371"><span class="lineNum">     371 </span>            :                 }                                                       \</a>
+<a name="372"><span class="lineNum">     372 </span>            :         } while (false)</a>
+<a name="373"><span class="lineNum">     373 </span>            : </a>
+<a name="374"><span class="lineNum">     374 </span>            : #define return_with_errno(r, err)                     \</a>
+<a name="375"><span class="lineNum">     375 </span>            :         do {                                          \</a>
+<a name="376"><span class="lineNum">     376 </span>            :                 errno = abs(err);                     \</a>
+<a name="377"><span class="lineNum">     377 </span>            :                 return r;                             \</a>
+<a name="378"><span class="lineNum">     378 </span>            :         } while (false)</a>
+<a name="379"><span class="lineNum">     379 </span>            : </a>
+<a name="380"><span class="lineNum">     380 </span>            : #define PTR_TO_INT(p) ((int) ((intptr_t) (p)))</a>
+<a name="381"><span class="lineNum">     381 </span>            : #define INT_TO_PTR(u) ((void *) ((intptr_t) (u)))</a>
+<a name="382"><span class="lineNum">     382 </span>            : #define PTR_TO_UINT(p) ((unsigned) ((uintptr_t) (p)))</a>
+<a name="383"><span class="lineNum">     383 </span>            : #define UINT_TO_PTR(u) ((void *) ((uintptr_t) (u)))</a>
+<a name="384"><span class="lineNum">     384 </span>            : </a>
+<a name="385"><span class="lineNum">     385 </span>            : #define PTR_TO_LONG(p) ((long) ((intptr_t) (p)))</a>
+<a name="386"><span class="lineNum">     386 </span>            : #define LONG_TO_PTR(u) ((void *) ((intptr_t) (u)))</a>
+<a name="387"><span class="lineNum">     387 </span>            : #define PTR_TO_ULONG(p) ((unsigned long) ((uintptr_t) (p)))</a>
+<a name="388"><span class="lineNum">     388 </span>            : #define ULONG_TO_PTR(u) ((void *) ((uintptr_t) (u)))</a>
+<a name="389"><span class="lineNum">     389 </span>            : </a>
+<a name="390"><span class="lineNum">     390 </span>            : #define PTR_TO_INT32(p) ((int32_t) ((intptr_t) (p)))</a>
+<a name="391"><span class="lineNum">     391 </span>            : #define INT32_TO_PTR(u) ((void *) ((intptr_t) (u)))</a>
+<a name="392"><span class="lineNum">     392 </span>            : #define PTR_TO_UINT32(p) ((uint32_t) ((uintptr_t) (p)))</a>
+<a name="393"><span class="lineNum">     393 </span>            : #define UINT32_TO_PTR(u) ((void *) ((uintptr_t) (u)))</a>
+<a name="394"><span class="lineNum">     394 </span>            : </a>
+<a name="395"><span class="lineNum">     395 </span>            : #define PTR_TO_INT64(p) ((int64_t) ((intptr_t) (p)))</a>
+<a name="396"><span class="lineNum">     396 </span>            : #define INT64_TO_PTR(u) ((void *) ((intptr_t) (u)))</a>
+<a name="397"><span class="lineNum">     397 </span>            : #define PTR_TO_UINT64(p) ((uint64_t) ((uintptr_t) (p)))</a>
+<a name="398"><span class="lineNum">     398 </span>            : #define UINT64_TO_PTR(u) ((void *) ((uintptr_t) (u)))</a>
+<a name="399"><span class="lineNum">     399 </span>            : </a>
+<a name="400"><span class="lineNum">     400 </span>            : #define PTR_TO_SIZE(p) ((size_t) ((uintptr_t) (p)))</a>
+<a name="401"><span class="lineNum">     401 </span>            : #define SIZE_TO_PTR(u) ((void *) ((uintptr_t) (u)))</a>
+<a name="402"><span class="lineNum">     402 </span>            : </a>
+<a name="403"><span class="lineNum">     403 </span>            : #define CHAR_TO_STR(x) ((char[2]) { x, 0 })</a>
+<a name="404"><span class="lineNum">     404 </span>            : </a>
+<a name="405"><span class="lineNum">     405 </span>            : #define char_array_0(x) x[sizeof(x)-1] = 0;</a>
+<a name="406"><span class="lineNum">     406 </span>            : </a>
+<a name="407"><span class="lineNum">     407 </span>            : /* Returns the number of chars needed to format variables of the</a>
+<a name="408"><span class="lineNum">     408 </span>            :  * specified type as a decimal string. Adds in extra space for a</a>
+<a name="409"><span class="lineNum">     409 </span>            :  * negative '-' prefix (hence works correctly on signed</a>
+<a name="410"><span class="lineNum">     410 </span>            :  * types). Includes space for the trailing NUL. */</a>
+<a name="411"><span class="lineNum">     411 </span>            : #define DECIMAL_STR_MAX(type)                                           \</a>
+<a name="412"><span class="lineNum">     412 </span>            :         (2+(sizeof(type) &lt;= 1 ? 3 :                                     \</a>
+<a name="413"><span class="lineNum">     413 </span>            :             sizeof(type) &lt;= 2 ? 5 :                                     \</a>
+<a name="414"><span class="lineNum">     414 </span>            :             sizeof(type) &lt;= 4 ? 10 :                                    \</a>
+<a name="415"><span class="lineNum">     415 </span>            :             sizeof(type) &lt;= 8 ? 20 : sizeof(int[-2*(sizeof(type) &gt; 8)])))</a>
+<a name="416"><span class="lineNum">     416 </span>            : </a>
+<a name="417"><span class="lineNum">     417 </span>            : #define DECIMAL_STR_WIDTH(x)                            \</a>
+<a name="418"><span class="lineNum">     418 </span>            :         ({                                              \</a>
+<a name="419"><span class="lineNum">     419 </span>            :                 typeof(x) _x_ = (x);                    \</a>
+<a name="420"><span class="lineNum">     420 </span>            :                 unsigned ans = 1;                       \</a>
+<a name="421"><span class="lineNum">     421 </span>            :                 while ((_x_ /= 10) != 0)                \</a>
+<a name="422"><span class="lineNum">     422 </span>            :                         ans++;                          \</a>
+<a name="423"><span class="lineNum">     423 </span>            :                 ans;                                    \</a>
+<a name="424"><span class="lineNum">     424 </span>            :         })</a>
+<a name="425"><span class="lineNum">     425 </span>            : </a>
+<a name="426"><span class="lineNum">     426 </span>            : #define SET_FLAG(v, flag, b) \</a>
+<a name="427"><span class="lineNum">     427 </span>            :         (v) = (b) ? ((v) | (flag)) : ((v) &amp; ~(flag))</a>
+<a name="428"><span class="lineNum">     428 </span>            : #define FLAGS_SET(v, flags) \</a>
+<a name="429"><span class="lineNum">     429 </span>            :         ((~(v) &amp; (flags)) == 0)</a>
+<a name="430"><span class="lineNum">     430 </span>            : </a>
+<a name="431"><span class="lineNum">     431 </span>            : #define CASE_F(X) case X:</a>
+<a name="432"><span class="lineNum">     432 </span>            : #define CASE_F_1(CASE, X) CASE_F(X)</a>
+<a name="433"><span class="lineNum">     433 </span>            : #define CASE_F_2(CASE, X, ...)  CASE(X) CASE_F_1(CASE, __VA_ARGS__)</a>
+<a name="434"><span class="lineNum">     434 </span>            : #define CASE_F_3(CASE, X, ...)  CASE(X) CASE_F_2(CASE, __VA_ARGS__)</a>
+<a name="435"><span class="lineNum">     435 </span>            : #define CASE_F_4(CASE, X, ...)  CASE(X) CASE_F_3(CASE, __VA_ARGS__)</a>
+<a name="436"><span class="lineNum">     436 </span>            : #define CASE_F_5(CASE, X, ...)  CASE(X) CASE_F_4(CASE, __VA_ARGS__)</a>
+<a name="437"><span class="lineNum">     437 </span>            : #define CASE_F_6(CASE, X, ...)  CASE(X) CASE_F_5(CASE, __VA_ARGS__)</a>
+<a name="438"><span class="lineNum">     438 </span>            : #define CASE_F_7(CASE, X, ...)  CASE(X) CASE_F_6(CASE, __VA_ARGS__)</a>
+<a name="439"><span class="lineNum">     439 </span>            : #define CASE_F_8(CASE, X, ...)  CASE(X) CASE_F_7(CASE, __VA_ARGS__)</a>
+<a name="440"><span class="lineNum">     440 </span>            : #define CASE_F_9(CASE, X, ...)  CASE(X) CASE_F_8(CASE, __VA_ARGS__)</a>
+<a name="441"><span class="lineNum">     441 </span>            : #define CASE_F_10(CASE, X, ...) CASE(X) CASE_F_9(CASE, __VA_ARGS__)</a>
+<a name="442"><span class="lineNum">     442 </span>            : #define CASE_F_11(CASE, X, ...) CASE(X) CASE_F_10(CASE, __VA_ARGS__)</a>
+<a name="443"><span class="lineNum">     443 </span>            : #define CASE_F_12(CASE, X, ...) CASE(X) CASE_F_11(CASE, __VA_ARGS__)</a>
+<a name="444"><span class="lineNum">     444 </span>            : #define CASE_F_13(CASE, X, ...) CASE(X) CASE_F_12(CASE, __VA_ARGS__)</a>
+<a name="445"><span class="lineNum">     445 </span>            : #define CASE_F_14(CASE, X, ...) CASE(X) CASE_F_13(CASE, __VA_ARGS__)</a>
+<a name="446"><span class="lineNum">     446 </span>            : #define CASE_F_15(CASE, X, ...) CASE(X) CASE_F_14(CASE, __VA_ARGS__)</a>
+<a name="447"><span class="lineNum">     447 </span>            : #define CASE_F_16(CASE, X, ...) CASE(X) CASE_F_15(CASE, __VA_ARGS__)</a>
+<a name="448"><span class="lineNum">     448 </span>            : #define CASE_F_17(CASE, X, ...) CASE(X) CASE_F_16(CASE, __VA_ARGS__)</a>
+<a name="449"><span class="lineNum">     449 </span>            : #define CASE_F_18(CASE, X, ...) CASE(X) CASE_F_17(CASE, __VA_ARGS__)</a>
+<a name="450"><span class="lineNum">     450 </span>            : #define CASE_F_19(CASE, X, ...) CASE(X) CASE_F_18(CASE, __VA_ARGS__)</a>
+<a name="451"><span class="lineNum">     451 </span>            : #define CASE_F_20(CASE, X, ...) CASE(X) CASE_F_19(CASE, __VA_ARGS__)</a>
+<a name="452"><span class="lineNum">     452 </span>            : </a>
+<a name="453"><span class="lineNum">     453 </span>            : #define GET_CASE_F(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,NAME,...) NAME</a>
+<a name="454"><span class="lineNum">     454 </span>            : #define FOR_EACH_MAKE_CASE(...) \</a>
+<a name="455"><span class="lineNum">     455 </span>            :         GET_CASE_F(__VA_ARGS__,CASE_F_20,CASE_F_19,CASE_F_18,CASE_F_17,CASE_F_16,CASE_F_15,CASE_F_14,CASE_F_13,CASE_F_12,CASE_F_11, \</a>
+<a name="456"><span class="lineNum">     456 </span>            :                                CASE_F_10,CASE_F_9,CASE_F_8,CASE_F_7,CASE_F_6,CASE_F_5,CASE_F_4,CASE_F_3,CASE_F_2,CASE_F_1) \</a>
+<a name="457"><span class="lineNum">     457 </span>            :                    (CASE_F,__VA_ARGS__)</a>
+<a name="458"><span class="lineNum">     458 </span>            : </a>
+<a name="459"><span class="lineNum">     459 </span>            : #define IN_SET(x, ...)                          \</a>
+<a name="460"><span class="lineNum">     460 </span>            :         ({                                      \</a>
+<a name="461"><span class="lineNum">     461 </span>            :                 bool _found = false;            \</a>
+<a name="462"><span class="lineNum">     462 </span>            :                 /* If the build breaks in the line below, you need to extend the case macros. (We use &quot;long double&quot; as  \</a>
+<a name="463"><span class="lineNum">     463 </span>            :                  * type for the array, in the hope that checkers such as ubsan don't complain that the initializers for \</a>
+<a name="464"><span class="lineNum">     464 </span>            :                  * the array are not representable by the base type. Ideally we'd use typeof(x) as base type, but that  \</a>
+<a name="465"><span class="lineNum">     465 </span>            :                  * doesn't work, as we want to use this on bitfields and gcc refuses typeof() on bitfields.) */         \</a>
+<a name="466"><span class="lineNum">     466 </span>            :                 static const long double __assert_in_set[] _unused_ = { __VA_ARGS__ }; \</a>
+<a name="467"><span class="lineNum">     467 </span>            :                 assert_cc(ELEMENTSOF(__assert_in_set) &lt;= 20); \</a>
+<a name="468"><span class="lineNum">     468 </span>            :                 switch(x) {                     \</a>
+<a name="469"><span class="lineNum">     469 </span>            :                 FOR_EACH_MAKE_CASE(__VA_ARGS__) \</a>
+<a name="470"><span class="lineNum">     470 </span>            :                         _found = true;          \</a>
+<a name="471"><span class="lineNum">     471 </span>            :                         break;                  \</a>
+<a name="472"><span class="lineNum">     472 </span>            :                 default:                        \</a>
+<a name="473"><span class="lineNum">     473 </span>            :                         break;                  \</a>
+<a name="474"><span class="lineNum">     474 </span>            :                 }                               \</a>
+<a name="475"><span class="lineNum">     475 </span>            :                 _found;                         \</a>
+<a name="476"><span class="lineNum">     476 </span>            :         })</a>
+<a name="477"><span class="lineNum">     477 </span>            : </a>
+<a name="478"><span class="lineNum">     478 </span>            : #define SWAP_TWO(x, y) do {                        \</a>
+<a name="479"><span class="lineNum">     479 </span>            :                 typeof(x) _t = (x);                \</a>
+<a name="480"><span class="lineNum">     480 </span>            :                 (x) = (y);                         \</a>
+<a name="481"><span class="lineNum">     481 </span>            :                 (y) = (_t);                        \</a>
+<a name="482"><span class="lineNum">     482 </span>            :         } while (false)</a>
+<a name="483"><span class="lineNum">     483 </span>            : </a>
+<a name="484"><span class="lineNum">     484 </span>            : /* Define C11 thread_local attribute even on older gcc compiler</a>
+<a name="485"><span class="lineNum">     485 </span>            :  * version */</a>
+<a name="486"><span class="lineNum">     486 </span>            : #ifndef thread_local</a>
+<a name="487"><span class="lineNum">     487 </span>            : /*</a>
+<a name="488"><span class="lineNum">     488 </span>            :  * Don't break on glibc &lt; 2.16 that doesn't define __STDC_NO_THREADS__</a>
+<a name="489"><span class="lineNum">     489 </span>            :  * see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=53769</a>
+<a name="490"><span class="lineNum">     490 </span>            :  */</a>
+<a name="491"><span class="lineNum">     491 </span>            : #if __STDC_VERSION__ &gt;= 201112L &amp;&amp; !(defined(__STDC_NO_THREADS__) || (defined(__GNU_LIBRARY__) &amp;&amp; __GLIBC__ == 2 &amp;&amp; __GLIBC_MINOR__ &lt; 16))</a>
+<a name="492"><span class="lineNum">     492 </span>            : #define thread_local _Thread_local</a>
+<a name="493"><span class="lineNum">     493 </span>            : #else</a>
+<a name="494"><span class="lineNum">     494 </span>            : #define thread_local __thread</a>
+<a name="495"><span class="lineNum">     495 </span>            : #endif</a>
+<a name="496"><span class="lineNum">     496 </span>            : #endif</a>
+<a name="497"><span class="lineNum">     497 </span>            : </a>
+<a name="498"><span class="lineNum">     498 </span>            : #define DEFINE_TRIVIAL_DESTRUCTOR(name, type, func)             \</a>
+<a name="499"><span class="lineNum">     499 </span>            :         static inline void name(type *p) {                      \</a>
+<a name="500"><span class="lineNum">     500 </span>            :                 func(p);                                        \</a>
+<a name="501"><span class="lineNum">     501 </span>            :         }</a>
+<a name="502"><span class="lineNum">     502 </span>            : </a>
+<a name="503"><span class="lineNum">     503 </span>            : #define DEFINE_TRIVIAL_CLEANUP_FUNC(type, func)                 \</a>
+<a name="504"><span class="lineNum">     504 </span>            :         static inline void func##p(type *p) {                   \</a>
+<a name="505"><span class="lineNum">     505 </span>            :                 if (*p)                                         \</a>
+<a name="506"><span class="lineNum">     506 </span>            :                         func(*p);                               \</a>
+<a name="507"><span class="lineNum">     507 </span>            :         }</a>
+<a name="508"><span class="lineNum">     508 </span>            : </a>
+<a name="509"><span class="lineNum">     509 </span>            : #define _DEFINE_TRIVIAL_REF_FUNC(type, name, scope)             \</a>
+<a name="510"><span class="lineNum">     510 </span>            :         scope type *name##_ref(type *p) {                       \</a>
+<a name="511"><span class="lineNum">     511 </span>            :                 if (!p)                                         \</a>
+<a name="512"><span class="lineNum">     512 </span>            :                         return NULL;                            \</a>
+<a name="513"><span class="lineNum">     513 </span>            :                                                                 \</a>
+<a name="514"><span class="lineNum">     514 </span>            :                 assert(p-&gt;n_ref &gt; 0);                           \</a>
+<a name="515"><span class="lineNum">     515 </span>            :                 p-&gt;n_ref++;                                     \</a>
+<a name="516"><span class="lineNum">     516 </span>            :                 return p;                                       \</a>
+<a name="517"><span class="lineNum">     517 </span>            :         }</a>
+<a name="518"><span class="lineNum">     518 </span>            : </a>
+<a name="519"><span class="lineNum">     519 </span>            : #define _DEFINE_TRIVIAL_UNREF_FUNC(type, name, free_func, scope) \</a>
+<a name="520"><span class="lineNum">     520 </span>            :         scope type *name##_unref(type *p) {                      \</a>
+<a name="521"><span class="lineNum">     521 </span>            :                 if (!p)                                          \</a>
+<a name="522"><span class="lineNum">     522 </span>            :                         return NULL;                             \</a>
+<a name="523"><span class="lineNum">     523 </span>            :                                                                  \</a>
+<a name="524"><span class="lineNum">     524 </span>            :                 assert(p-&gt;n_ref &gt; 0);                            \</a>
+<a name="525"><span class="lineNum">     525 </span>            :                 p-&gt;n_ref--;                                      \</a>
+<a name="526"><span class="lineNum">     526 </span>            :                 if (p-&gt;n_ref &gt; 0)                                \</a>
+<a name="527"><span class="lineNum">     527 </span>            :                         return NULL;                             \</a>
+<a name="528"><span class="lineNum">     528 </span>            :                                                                  \</a>
+<a name="529"><span class="lineNum">     529 </span>            :                 return free_func(p);                             \</a>
+<a name="530"><span class="lineNum">     530 </span>            :         }</a>
+<a name="531"><span class="lineNum">     531 </span>            : </a>
+<a name="532"><span class="lineNum">     532 </span>            : #define DEFINE_TRIVIAL_REF_FUNC(type, name)     \</a>
+<a name="533"><span class="lineNum">     533 </span>            :         _DEFINE_TRIVIAL_REF_FUNC(type, name,)</a>
+<a name="534"><span class="lineNum">     534 </span>            : #define DEFINE_PRIVATE_TRIVIAL_REF_FUNC(type, name)     \</a>
+<a name="535"><span class="lineNum">     535 </span>            :         _DEFINE_TRIVIAL_REF_FUNC(type, name, static)</a>
+<a name="536"><span class="lineNum">     536 </span>            : #define DEFINE_PUBLIC_TRIVIAL_REF_FUNC(type, name)      \</a>
+<a name="537"><span class="lineNum">     537 </span>            :         _DEFINE_TRIVIAL_REF_FUNC(type, name, _public_)</a>
+<a name="538"><span class="lineNum">     538 </span>            : </a>
+<a name="539"><span class="lineNum">     539 </span>            : #define DEFINE_TRIVIAL_UNREF_FUNC(type, name, free_func)        \</a>
+<a name="540"><span class="lineNum">     540 </span>            :         _DEFINE_TRIVIAL_UNREF_FUNC(type, name, free_func,)</a>
+<a name="541"><span class="lineNum">     541 </span>            : #define DEFINE_PRIVATE_TRIVIAL_UNREF_FUNC(type, name, free_func)        \</a>
+<a name="542"><span class="lineNum">     542 </span>            :         _DEFINE_TRIVIAL_UNREF_FUNC(type, name, free_func, static)</a>
+<a name="543"><span class="lineNum">     543 </span>            : #define DEFINE_PUBLIC_TRIVIAL_UNREF_FUNC(type, name, free_func)         \</a>
+<a name="544"><span class="lineNum">     544 </span>            :         _DEFINE_TRIVIAL_UNREF_FUNC(type, name, free_func, _public_)</a>
+<a name="545"><span class="lineNum">     545 </span>            : </a>
+<a name="546"><span class="lineNum">     546 </span>            : #define DEFINE_TRIVIAL_REF_UNREF_FUNC(type, name, free_func)    \</a>
+<a name="547"><span class="lineNum">     547 </span>            :         DEFINE_TRIVIAL_REF_FUNC(type, name);                    \</a>
+<a name="548"><span class="lineNum">     548 </span>            :         DEFINE_TRIVIAL_UNREF_FUNC(type, name, free_func);</a>
+<a name="549"><span class="lineNum">     549 </span>            : </a>
+<a name="550"><span class="lineNum">     550 </span>            : #define DEFINE_PRIVATE_TRIVIAL_REF_UNREF_FUNC(type, name, free_func)    \</a>
+<a name="551"><span class="lineNum">     551 </span>            :         DEFINE_PRIVATE_TRIVIAL_REF_FUNC(type, name);                    \</a>
+<a name="552"><span class="lineNum">     552 </span>            :         DEFINE_PRIVATE_TRIVIAL_UNREF_FUNC(type, name, free_func);</a>
+<a name="553"><span class="lineNum">     553 </span>            : </a>
+<a name="554"><span class="lineNum">     554 </span>            : #define DEFINE_PUBLIC_TRIVIAL_REF_UNREF_FUNC(type, name, free_func)    \</a>
+<a name="555"><span class="lineNum">     555 </span>            :         DEFINE_PUBLIC_TRIVIAL_REF_FUNC(type, name);                    \</a>
+<a name="556"><span class="lineNum">     556 </span>            :         DEFINE_PUBLIC_TRIVIAL_UNREF_FUNC(type, name, free_func);</a>
+<a name="557"><span class="lineNum">     557 </span>            : </a>
+<a name="558"><span class="lineNum">     558 </span>            : #include &quot;log.h&quot;</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
